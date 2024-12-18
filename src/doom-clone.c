@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <math.h>
-#include "player/player.h"
+#include "player.h"
 #include "display.h"
 
 typedef uint32_t 	u32;
@@ -67,7 +67,23 @@ int init() {
 }
 
 int game_loop() {
-	return 1;
+	clear_screen(state.pixels);
+	// render a small 4-pixel square
+	state.pixels[100*SCREEN_WIDTH + 100] = 0xFFFFFFFF;
+	state.pixels[99*SCREEN_WIDTH + 100] = 0xFFFFFFFF;
+	state.pixels[99*SCREEN_WIDTH + 101] = 0xFFFFFFFF;
+	state.pixels[100*SCREEN_WIDTH + 101] = 0xFFFFFFFF;
+
+	SDL_Event e;
+
+	while (SDL_PollEvent(&e)) {
+		switch (e.type) {
+			case SDL_QUIT:
+				return 1;
+		}
+	}
+	render_screen(state.texture, state.renderer, state.pixels);
+	return 0;
 }
 
 int cleanup() {

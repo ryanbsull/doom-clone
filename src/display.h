@@ -3,7 +3,7 @@
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
-#include <cstdint>
+#include <stdint.h>
 
 #define SCREEN_WIDTH		640
 #define SCREEN_HEIGHT		400
@@ -33,10 +33,36 @@ int draw_ray(uint32_t* pixels, int x, int tex_x, int start, int end, int idx, in
 	for (int i = start; i < end; i++) {
 		tex_y = (int) tex_pos & (TEXTURE_HEIGHT - 1);
 		tex_pos += step;
-		color = textures->pixels[tex_idx + TEXTURE_HEIGHT * tex_y + tex_x];
+		color = *(uint32_t*)((uint64_t)textures->pixels + tex_idx + TEXTURE_HEIGHT * tex_y + tex_x);
 		color = (side == x_side) ? (color >> 1) & 8355711 : color;
 		pixels[y * SCREEN_WIDTH + x] = color;
 	}
+
+	return 0;
+}
+
+int clear_screen(uint32_t* pixels) {
+	for (int x = 0; x < SCREEN_WIDTH; x++)
+		for(int y = 0; y < SCREEN_HEIGHT; y++)
+			pixels[x*SCREEN_HEIGHT + y] = 0;
+
+	return 0;
+}
+
+int render_screen(SDL_Texture* texture, SDL_Renderer* renderer, uint32_t* pixels) {
+	SDL_UpdateTexture(
+		texture,
+		NULL,
+		pixels, SCREEN_WIDTH * sizeof(uint32_t)
+	);
+	SDL_RenderCopyEx(
+		renderer,
+		texture,
+		NULL, NULL,
+		0.0, NULL,
+		SDL_FLIP_VERTICAL
+	);
+	SDL_RenderPresent(renderer);
 
 	return 0;
 }
