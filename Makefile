@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -lm -lSDL2 -g
+CFLAGS = -lm -lSDL2_image -lSDL2 -g
 SRC_FILES := $(wildcard src/*.c)
 OUTPUT_FILES := $(patsubst src/%.c,build/%,$(SRC_FILES))
 
