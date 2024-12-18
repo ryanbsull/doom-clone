@@ -49,7 +49,7 @@ int draw_ray(uint32_t* pixels, int x, int hit_point, int start, int end, int idx
 	int y, tex_y, tex_x, tex_y_base; 
 	uint32_t color;
 	float step = TEXTURE_HEIGHT / (float)(end - start);
-	get_texture_idx(idx, &tex_x, &tex_y_base);
+	get_texture_idx((side == x_side) ? idx : idx-1, &tex_x, &tex_y_base);
 	tex_x += hit_point;
 
 	for (y = start; y < end; y++) {

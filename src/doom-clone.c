@@ -61,30 +61,119 @@ int init() {
 		return 1;
 	}
 
+	state.player.pos.x = 10;
+	state.player.pos.y = 10;
+	state.player.dir.x = 1;
+	state.player.dir.y = 0;
+	// define camera plane where the view will be projected onto
+	state.player.cam.x = 0;
+	state.player.cam.y = 0.66;
+
 	init_textures();
 	return 0;
 }
 
+void raycast(player* p, int slice) {
+	float cam_x = 2*(float)slice / SCREEN_WIDTH - 1;
+	vec2 slice_start, slice_end, // vectors that will be used for drawing our vertical slices across the screen
+	side_dist, // tracks the length of the ray from the current positiojn to the next x or y side
+	ray_dir = {p->dir.x + p->cam.x * cam_x, p->dir.y + p->cam.y * cam_x}, // calculate ray direction from the camera plane
+	delta_dist = {(ray_dir.x == 0) ? 1e30 : fabs(1 / ray_dir.x), (ray_dir.y == 0) ? 1e30 : fabs(1 / ray_dir.y)};
+	int_vec2 map_pos = {(int)p->pos.x, (int)p->pos.y}; // track integer map position
+	float dist; // track distance until a wall is encountered for this ray
+	int hit = map[map_pos.x * 16 + map_pos.y]; // track if the ray has hit a wall
+	enum side s;
+	int step_x, step_y;
+
+	if (ray_dir.x < 0) {
+		step_x = -1;
+		side_dist.x = (p->pos.x - (float) map_pos.x) * delta_dist.x;
+	} else {
+		step_x = 1;
+		side_dist.x = ((float) map_pos.x + 1 - p->pos.x) * delta_dist.x;
+	}
+	if (ray_dir.y < 0) {
+		step_y = -1;
+		side_dist.y = (p->pos.y - (float) map_pos.y) * delta_dist.y;
+	} else {
+		step_y = 1;
+		side_dist.y = ((float) map_pos.y + 1 - p->pos.y) * delta_dist.y;
+	}
+
+	while (hit == 0) {
+		if (side_dist.x < side_dist.y) {
+			side_dist.x += delta_dist.x;
+			map_pos.x += step_x;
+			s = x_side;
+		} else {
+			side_dist.y += delta_dist.y;
+			map_pos.y += step_y;
+			s = y_side;
+		}
+		hit = map[map_pos.x * 16 + map_pos.y];
+	}
+	switch(s) {
+		case x_side:
+			dist = (side_dist.x - delta_dist.x);
+			break;
+		case y_side:
+			dist = (side_dist.y - delta_dist.y);
+			break;
+	}
+	int tex_idx = hit;
+	double wall_hit_x = 
+			(s == x_side) ? 
+			      p->pos.y + dist * ray_dir.y : 
+			      p->pos.x + dist * ray_dir.x;
+	wall_hit_x -= trunc(wall_hit_x);
+	int tex_slice = (int)(wall_hit_x * (double)TEXTURE_WIDTH);
+	tex_slice = TEXTURE_WIDTH - tex_slice - 1;
+
+	int line_height = (int)(SCREEN_HEIGHT / dist);
+	int draw_start = (SCREEN_HEIGHT - line_height) / 2;
+	int draw_end = (SCREEN_HEIGHT + line_height) / 2;
+
+	slice_start.x = slice;
+	slice_end.x = slice;
+
+	slice_start.y = draw_start;
+	slice_end.y = draw_end;
+	draw_ray(state.pixels, slice_start.x, tex_slice, slice_start.y, slice_end.y, tex_idx, s);
+}
+
 int game_loop() {
 	clear_screen(state.pixels);
-	// render 4 texture skull - pentagram using draw_ray() function
-	for (int i = 0; i < TEXTURE_WIDTH; i++)
-		draw_ray(state.pixels, i + 100, i, 100, 200, 23, y_side);
-	for (int i = 0; i < TEXTURE_WIDTH; i++)
-		draw_ray(state.pixels, i + 164, i, 100, 200, 24, y_side);
-	for (int i = 0; i < TEXTURE_WIDTH; i++)
-		draw_ray(state.pixels, i + 100, i, 200, 300, 25, y_side);
-	for (int i = 0; i < TEXTURE_WIDTH; i++)
-		draw_ray(state.pixels, i + 164, i, 200, 300, 26, y_side);
-
 	SDL_Event e;
 
 	while (SDL_PollEvent(&e)) {
 		switch (e.type) {
 			case SDL_QUIT:
 				return 1;
+			case SDL_KEYDOWN:
+				switch (e.key.keysym.sym) {
+					case SDLK_w:
+						move(&state.player, FWD);
+						break;
+					case SDLK_s:
+						move(&state.player, BACK);
+						break;
+					case SDLK_a:
+						rotate(&state.player, LEFT);
+						break;
+					case SDLK_d:
+						rotate(&state.player, RIGHT);
+						break;
+					case SDLK_p:
+						printf("Player Info:\n\tPosition: [%f,%f]\n\tDirection: [%f,%f]\n", state.player.pos.x, state.player.pos.y, state.player.dir.x, state.player.dir.y);
+						break;
+				}
+				break;
 		}
 	}
+
+	for (int i = 0; i < SCREEN_WIDTH; i++)
+		raycast(&state.player, i);
+
 	render_screen(state.texture, state.renderer, state.pixels);
 	return 0;
 }
