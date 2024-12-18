@@ -6,17 +6,7 @@
 #include <stdint.h>
 #include <math.h>
 #include "player/player.h"
-
-#define SCREEN_WIDTH	640
-#define SCREEN_HEIGHT	400
-
-#define TEXTURE_WIDTH	64
-#define TEXTURE_HEIGHT	64
-
-enum side {
-	x_side,
-	y_side
-};
+#include "display.h"
 
 typedef uint32_t 	u32;
 typedef uint8_t 	u8;
@@ -28,8 +18,6 @@ struct {
 	u32 pixels[SCREEN_WIDTH * SCREEN_HEIGHT];
 	player player;
 } state;
-
-SDL_Surface* textures;
 
 int init();
 int game_loop();
@@ -74,10 +62,7 @@ int init() {
 		return 1;
 	}
 
-	IMG_Init(IMG_INIT_PNG);
-	// load textures from single PNG
-	// get individual textures by indexing into subset of textures->pixels
-	textures = IMG_Load("textures.png");
+	init_textures();
 	return 0;
 }
 
