@@ -4,7 +4,6 @@
 #include <SDL2/SDL_timer.h>
 #include <stdio.h>
 #include <stdint.h>
-#include <math.h>
 #include "player.h"
 #include "display.h"
 
@@ -53,7 +52,7 @@ int init() {
 
 	state.texture = SDL_CreateTexture(
 		state.renderer, 
-		SDL_PIXELFORMAT_ABGR8888,
+		SDL_PIXELFORMAT_RGB888,
 		SDL_TEXTUREACCESS_STREAMING,
 		SCREEN_WIDTH, SCREEN_HEIGHT
 		);
@@ -68,11 +67,15 @@ int init() {
 
 int game_loop() {
 	clear_screen(state.pixels);
-	// render a small 4-pixel square
-	state.pixels[100*SCREEN_WIDTH + 100] = 0xFFFFFFFF;
-	state.pixels[99*SCREEN_WIDTH + 100] = 0xFFFFFFFF;
-	state.pixels[99*SCREEN_WIDTH + 101] = 0xFFFFFFFF;
-	state.pixels[100*SCREEN_WIDTH + 101] = 0xFFFFFFFF;
+	// render 4 texture skull - pentagram using draw_ray() function
+	for (int i = 0; i < TEXTURE_WIDTH; i++)
+		draw_ray(state.pixels, i + 100, i, 100, 200, 23, y_side);
+	for (int i = 0; i < TEXTURE_WIDTH; i++)
+		draw_ray(state.pixels, i + 164, i, 100, 200, 24, y_side);
+	for (int i = 0; i < TEXTURE_WIDTH; i++)
+		draw_ray(state.pixels, i + 100, i, 200, 300, 25, y_side);
+	for (int i = 0; i < TEXTURE_WIDTH; i++)
+		draw_ray(state.pixels, i + 164, i, 200, 300, 26, y_side);
 
 	SDL_Event e;
 
