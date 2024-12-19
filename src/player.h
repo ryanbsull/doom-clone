@@ -1,6 +1,7 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
+#include "util.h"
 #include <math.h>
 
 #define MVMT_SPEED    0.2
@@ -24,21 +25,6 @@ int map[] = {
 		32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,32,
 		32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,
 };
-
-enum dir {
-	LEFT = -1,
-	RIGHT = 1,
-	FWD = 1,
-	BACK = -1,
-};
-
-typedef struct {
-	float x,y;
-} vec2;
-
-typedef struct {
-	int x,y;
-} int_vec2;
 
 typedef struct {
 	vec2 pos;

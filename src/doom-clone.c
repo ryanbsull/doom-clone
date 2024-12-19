@@ -3,12 +3,9 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_timer.h>
 #include <stdio.h>
-#include <stdint.h>
 #include "player.h"
 #include "display.h"
-
-typedef uint32_t 	u32;
-typedef uint8_t 	u8;
+#include "util.h"
 
 struct {
 	SDL_Window* win;
