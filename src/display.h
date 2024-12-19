@@ -33,7 +33,7 @@ int init_textures() {
 
 	// textures.png is a 9 x 12 grid of 64 x 64 pixel textures separated by 5 pixel buffers
 	// with texture[8][11] being blank 
-	textures = IMG_Load("textures.png");
+	textures = IMG_Load("textures/environment.png");
 	printf("FLAGS: %x\n", textures->flags);
 	return 0;
 }
