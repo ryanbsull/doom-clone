@@ -60,6 +60,7 @@ int init() {
 		return 1;
 	}
 
+	default_map(); // initialize default map
 	state.player.pos.x = 10;
 	state.player.pos.y = 10;
 	state.player.dir.x = 1;
@@ -87,71 +88,27 @@ float get_intercept_dist(player* p, wall* w) {
 }
 
 void raycast(player* p, int slice) {
-	float cam_x = 2*(float)slice / SCREEN_WIDTH - 1;
-	vec2 slice_start, slice_end, // vectors that will be used for drawing our vertical slices across the screen
-	side_dist, // tracks the length of the ray from the current positiojn to the next x or y side
-	ray_dir = {p->dir.x + p->cam.x * cam_x, p->dir.y + p->cam.y * cam_x}, // calculate ray direction from the camera plane
-	delta_dist = {(ray_dir.x == 0) ? 1e30 : fabs(1 / ray_dir.x), (ray_dir.y == 0) ? 1e30 : fabs(1 / ray_dir.y)};
-	int_vec2 map_pos = {(int)p->pos.x, (int)p->pos.y}; // track integer map position
-	float dist; // track distance until a wall is encountered for this ray
-	int hit = map[map_pos.x * 16 + map_pos.y]; // track if the ray has hit a wall
-	enum side s;
-	int step_x, step_y;
-
-	if (ray_dir.x < 0) {
-		step_x = -1;
-		side_dist.x = (p->pos.x - (float) map_pos.x) * delta_dist.x;
-	} else {
-		step_x = 1;
-		side_dist.x = ((float) map_pos.x + 1 - p->pos.x) * delta_dist.x;
-	}
-	if (ray_dir.y < 0) {
-		step_y = -1;
-		side_dist.y = (p->pos.y - (float) map_pos.y) * delta_dist.y;
-	} else {
-		step_y = 1;
-		side_dist.y = ((float) map_pos.y + 1 - p->pos.y) * delta_dist.y;
-	}
-
-	while (hit == 0) {
-		if (side_dist.x < side_dist.y) {
-			side_dist.x += delta_dist.x;
-			map_pos.x += step_x;
-			s = x_side;
-		} else {
-			side_dist.y += delta_dist.y;
-			map_pos.y += step_y;
-			s = y_side;
+	player temp_player;
+	float dist = 10000, current_dist;
+	float offset = ((float) slice / SCREEN_WIDTH) - 1.0;
+	temp_player.pos.x = p->pos.x + offset;
+	temp_player.pos.y = p->pos.y;
+	temp_player.dir.x = p->dir.x;
+	temp_player.dir.y = p->dir.y;
+	int tex_slice = (int)((float)slice * TEXTURE_WIDTH / SCREEN_WIDTH);
+	int tex_idx = 32;
+	for (int i = 0; i < current_map.num_sections; i++)
+		for (int j = 0; j < current_map.sections[i].num_walls; j++) {
+			current_dist = get_intercept_dist(&temp_player, &current_map.sections[i].walls[j]);
+			if (current_dist > 0 && current_dist < dist)
+				dist = current_dist;
 		}
-		hit = map[map_pos.x * 16 + map_pos.y];
-	}
-	switch(s) {
-		case x_side:
-			dist = (side_dist.x - delta_dist.x);
-			break;
-		case y_side:
-			dist = (side_dist.y - delta_dist.y);
-			break;
-	}
-	int tex_idx = hit;
-	double wall_hit_x = 
-			(s == x_side) ? 
-			      p->pos.y + dist * ray_dir.y : 
-			      p->pos.x + dist * ray_dir.x;
-	wall_hit_x -= trunc(wall_hit_x);
-	int tex_slice = (int)(wall_hit_x * (double)TEXTURE_WIDTH);
-	tex_slice = TEXTURE_WIDTH - tex_slice - 1;
 
-	int line_height = (int)(SCREEN_HEIGHT / dist);
+	int line_height = (int)(SCREEN_HEIGHT / (dist / 2.0));
 	int draw_start = (SCREEN_HEIGHT - line_height) / 2;
 	int draw_end = (SCREEN_HEIGHT + line_height) / 2;
 
-	slice_start.x = slice;
-	slice_end.x = slice;
-
-	slice_start.y = draw_start;
-	slice_end.y = draw_end;
-	draw_ray(state.pixels, slice_start.x, tex_slice, slice_start.y, slice_end.y, tex_idx, s);
+	draw_ray(state.pixels, slice, tex_slice, draw_start, draw_end, tex_idx, x_side);
 }
 
 int game_loop() {

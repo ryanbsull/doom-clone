@@ -13,7 +13,7 @@ typedef struct {
 } wall;
 
 typedef struct {
-  wall* bounds;
+  wall* walls;
   int num_walls;
   int floor;
   int floor_tex;
