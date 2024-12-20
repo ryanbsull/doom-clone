@@ -6,6 +6,7 @@
 #include "player.h"
 #include "display.h"
 #include "util.h"
+#include "map.h"
 
 struct {
 	SDL_Window* win;
@@ -68,6 +69,20 @@ int init() {
 
 	init_textures();
 	return 0;
+}
+
+// TODO: check if intercept point is within the length of the wall
+int intercepts(player* p, wall* w) {
+	return 1;
+}
+
+float get_intercept_dist(player* p, wall* w) {
+	if (!intercepts(p, w))
+		return -1;
+	vec2 intc_pt; 
+	float t = (((p->pos.x - w->start.x)*(w->start.y - w->end.y) - (p->pos.y - w->start.y)*(w->start.x - w->end.x)) / 
+		((p->dir.x)*(w->start.y - w->end.y) - (p->dir.y)*(w->start.x - w->end.x)));
+	return -t;
 }
 
 void raycast(player* p, int slice) {
@@ -141,6 +156,16 @@ void raycast(player* p, int slice) {
 int game_loop() {
 	clear_screen(state.pixels);
 	SDL_Event e;
+	/*
+	// TEST for get_intercept_dist()
+	// TODO: transition raycast() to use the new map.h data structures rather than the map[] array
+	wall example;
+	example.start.x = 13;
+	example.start.y = 10;
+	example.end.x = 13;
+	example.end.y = 9;
+	printf("CHECK WALL INTERCEPT FUNC: %f\n", get_intercept_dist(&state.player, &example));
+	*/
 
 	while (SDL_PollEvent(&e)) {
 		switch (e.type) {
