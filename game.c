@@ -68,7 +68,7 @@ int init() {
 	state.player.dir.y = 0;
 	// define camera plane where the view will be projected onto
 	state.player.cam.x = 0;
-	state.player.cam.y = 0.66;
+	state.player.cam.y = -1;
 
 	init_textures();
 	return 0;
@@ -86,8 +86,8 @@ float get_intercept_dist(player* p, wall* w, float* hit_pt) {
 	if (!intercepts(p, w , dist) || dist  < 0.66)
 		return -1;
 	*hit_pt = fabs(((p->dir.x)*(p->pos.y - w->start.y) - (p->dir.y)*(p->pos.x - w->start.x)) / 
-			(p->dir.x)*(w->start.y - w->end.y) - (p->dir.y)*(w->start.x - w->end.x));
-	*hit_pt = *hit_pt / (sqrtf(pow(w->end.x - w->start.x, 2) + pow(w->end.y - w->start.y, 2)));
+			((p->dir.x)*(w->start.y - w->end.y) - (p->dir.y)*(w->start.x - w->end.x)));
+	*hit_pt = *hit_pt * (sqrtf(pow(w->end.x - w->start.x, 2) + pow(w->end.y - w->start.y, 2)));
 	*hit_pt = *hit_pt - floorf(*hit_pt);
 	return fabs(dist);
 }
@@ -104,16 +104,14 @@ void raycast(player* p, int slice) {
 	float hit_pt, current_hit_pt;
 	for (int i = 0; i < current_map.num_sections; i++)
 		for (int j = 0; j < current_map.sections[i].num_walls; j++) {
-			current_dist = get_intercept_dist(&temp_player, &current_map.sections[i].walls[j], &current_hit_pt);
-			printf("CURRENT_DIST: %f\n", current_dist);
+			current_dist = get_intercept_dist(&temp_player, 
+				&current_map.sections[i].walls[j], &current_hit_pt);
 			if (current_dist > 0 && current_dist < dist) {
 				wall_idx = j;
 				dist = current_dist;
 				hit_pt = current_hit_pt;
 			}
 		}
-	if (dist > 100 && dist != current_dist)
-		printf("CURRENT_DIST: %f\n", current_dist);
 	int tex_slice = (int)((float) TEXTURE_WIDTH * hit_pt);
 	int line_height = (int)(SCREEN_HEIGHT / dist);
 	int draw_start = (SCREEN_HEIGHT - line_height) / 2;
