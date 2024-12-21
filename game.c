@@ -2,6 +2,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_timer.h>
+#include <math.h>
 #include <stdio.h>
 
 #include "include/util.h"
@@ -78,37 +79,47 @@ int intercepts(player* p, wall* w, float dist) {
 		p->pos.y + dist * p->dir.y >= fmin(w->start.y, w->end.y) && p->pos.y + dist * p->dir.y <= fmax(w->start.y, w->end.y));
 }
 
-float get_intercept_dist(player* p, wall* w) {
+float get_intercept_dist(player* p, wall* w, float* hit_pt) {
 	vec2 intc_pt; 
 	float dist = -(((p->pos.x - w->start.x)*(w->start.y - w->end.y) - (p->pos.y - w->start.y)*(w->start.x - w->end.x)) / 
-		((p->dir.x)*(w->start.y - w->end.y) - (p->dir.y)*(w->start.x - w->end.x)));
+			((p->dir.x)*(w->start.y - w->end.y) - (p->dir.y)*(w->start.x - w->end.x)));
 	if (!intercepts(p, w , dist) || dist  < 0.66)
 		return -1;
-	return dist;
+	*hit_pt = fabs(((p->dir.x)*(p->pos.y - w->start.y) - (p->dir.y)*(p->pos.x - w->start.x)) / 
+			(p->dir.x)*(w->start.y - w->end.y) - (p->dir.y)*(w->start.x - w->end.x));
+	*hit_pt = *hit_pt / (sqrtf(pow(w->end.x - w->start.x, 2) + pow(w->end.y - w->start.y, 2)));
+	*hit_pt = *hit_pt - floorf(*hit_pt);
+	return fabs(dist);
 }
 
 void raycast(player* p, int slice) {
 	player temp_player;
-	float dist = 10000, current_dist;
-	float offset = ((float) slice / SCREEN_WIDTH) - 1.0;
-	temp_player.pos.x = p->pos.x + offset;
-	temp_player.pos.y = p->pos.y;
+	float dist = INFINITY, current_dist;
+	float offset = ((float) slice / SCREEN_WIDTH) - 0.5;
+	temp_player.pos.x = p->pos.x + offset * (p->cam.x);
+	temp_player.pos.y = p->pos.y + offset * (p->cam.y);
 	temp_player.dir.x = p->dir.x;
 	temp_player.dir.y = p->dir.y;
-	int tex_slice = (int)((float)slice * TEXTURE_WIDTH / SCREEN_WIDTH);
-	int tex_idx = 32;
+	int tex_idx = 32, wall_idx = -1;
+	float hit_pt, current_hit_pt;
 	for (int i = 0; i < current_map.num_sections; i++)
 		for (int j = 0; j < current_map.sections[i].num_walls; j++) {
-			current_dist = get_intercept_dist(&temp_player, &current_map.sections[i].walls[j]);
-			if (current_dist > 0 && current_dist < dist)
+			current_dist = get_intercept_dist(&temp_player, &current_map.sections[i].walls[j], &current_hit_pt);
+			printf("CURRENT_DIST: %f\n", current_dist);
+			if (current_dist > 0 && current_dist < dist) {
+				wall_idx = j;
 				dist = current_dist;
+				hit_pt = current_hit_pt;
+			}
 		}
-
-	int line_height = (int)(SCREEN_HEIGHT / (dist / 2.0));
+	if (dist > 100 && dist != current_dist)
+		printf("CURRENT_DIST: %f\n", current_dist);
+	int tex_slice = (int)((float) TEXTURE_WIDTH * hit_pt);
+	int line_height = (int)(SCREEN_HEIGHT / dist);
 	int draw_start = (SCREEN_HEIGHT - line_height) / 2;
 	int draw_end = (SCREEN_HEIGHT + line_height) / 2;
 
-	draw_ray(state.pixels, slice, tex_slice, draw_start, draw_end, tex_idx, x_side);
+	draw_ray(state.pixels, slice, tex_slice, draw_start, draw_end, tex_idx, wall_idx % 2);
 }
 
 int game_loop() {
