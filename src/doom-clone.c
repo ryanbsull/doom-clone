@@ -156,14 +156,6 @@ void raycast(player* p, int slice) {
 int game_loop() {
 	clear_screen(state.pixels);
 	SDL_Event e;
-	// TEST for get_intercept_dist()
-	// TODO: transition raycast() to use the new map.h data structures rather than the map[] array
-	wall example;
-	example.start.x = 13;
-	example.start.y = 10;
-	example.end.x = 13;
-	example.end.y = 9;
-	printf("CHECK WALL INTERCEPT FUNC: %f\n", get_intercept_dist(&state.player, &example));
 
 	while (SDL_PollEvent(&e)) {
 		switch (e.type) {
