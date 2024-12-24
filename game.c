@@ -68,7 +68,7 @@ int init() {
 	state.player.dir.y = 0;
 	// define camera plane where the view will be projected onto
 	state.player.cam.x = 0;
-	state.player.cam.y = -1;
+	state.player.cam.y = 0.66;
 
 	init_textures();
 	return 0;
@@ -88,7 +88,7 @@ float get_intercept_dist(player* p, wall* w, float* hit_pt) {
 	*hit_pt = fabs(((p->dir.x)*(p->pos.y - w->start.y) - (p->dir.y)*(p->pos.x - w->start.x)) / 
 			((p->dir.x)*(w->start.y - w->end.y) - (p->dir.y)*(w->start.x - w->end.x)));
 	*hit_pt = *hit_pt * (sqrtf(pow(w->end.x - w->start.x, 2) + pow(w->end.y - w->start.y, 2)));
-	*hit_pt = *hit_pt - floorf(*hit_pt);
+	*hit_pt = *hit_pt - truncf(*hit_pt);
 	return fabs(dist);
 }
 
@@ -117,7 +117,7 @@ void raycast(player* p, int slice) {
 	int draw_start = (SCREEN_HEIGHT - line_height) / 2;
 	int draw_end = (SCREEN_HEIGHT + line_height) / 2;
 
-	draw_ray(state.pixels, slice, tex_slice, draw_start, draw_end, tex_idx, wall_idx % 2);
+	draw_ray(state.pixels, slice, tex_slice, draw_start, draw_end, tex_idx, abs(wall_idx % 2));
 }
 
 int game_loop() {
