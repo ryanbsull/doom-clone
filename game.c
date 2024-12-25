@@ -80,7 +80,7 @@ int intercepts(player* p, wall* w, float dist) {
 }
 
 float get_intercept_dist(player* p, wall* w, float* hit_pt) {
-	vec2 intc_pt; 
+	vec2 intc_pt;
 	float dist = -(((p->pos.x - w->start.x)*(w->start.y - w->end.y) - (p->pos.y - w->start.y)*(w->start.x - w->end.x)) / 
 			((p->dir.x)*(w->start.y - w->end.y) - (p->dir.y)*(w->start.x - w->end.x)));
 	if (!intercepts(p, w , dist) || dist  < 0.66)

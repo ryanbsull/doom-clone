@@ -26,6 +26,9 @@ typedef struct {
   int num_sections;
 } map_data;
 
+extern map_data current_map;
+
+int default_map();
 int load_map(char* map_file);
 int save_map(char* map_file);
 
