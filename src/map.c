@@ -5,8 +5,9 @@ map_data current_map;
 int default_map() {
   current_map.num_sections = 1;
   current_map.sections = (map_section*) malloc(sizeof(map_section) * current_map.num_sections);
-  current_map.sections[0].num_walls = 4;
+  current_map.sections[0].num_walls = 7;
   current_map.sections[0].walls = (wall*) malloc(sizeof(wall) * current_map.sections[0].num_walls);
+  // box that the player starts in
   current_map.sections[0].walls[0].start.x = 0;
   current_map.sections[0].walls[0].start.y = 0;
   current_map.sections[0].walls[0].end.x = 15;
@@ -23,6 +24,19 @@ int default_map() {
   current_map.sections[0].walls[3].start.y = 15;
   current_map.sections[0].walls[3].end.x = 0;
   current_map.sections[0].walls[3].end.y = 0;
+  // triangle within the room
+  current_map.sections[0].walls[4].start.x = 2;
+  current_map.sections[0].walls[4].start.y = 2;
+  current_map.sections[0].walls[4].end.x = 1;
+  current_map.sections[0].walls[4].end.y = 3;
+  current_map.sections[0].walls[5].start.x = 1;
+  current_map.sections[0].walls[5].start.y = 3;
+  current_map.sections[0].walls[5].end.x = 3;
+  current_map.sections[0].walls[5].end.y = 3;
+  current_map.sections[0].walls[6].start.x = 3;
+  current_map.sections[0].walls[6].start.y = 3;
+  current_map.sections[0].walls[6].end.x = 2;
+  current_map.sections[0].walls[6].end.y = 2;
   return 0;
 }
 

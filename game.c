@@ -62,13 +62,13 @@ int init() {
 	}
 
 	default_map(); // initialize default map
-	state.player.pos.x = 10;
-	state.player.pos.y = 10;
-	state.player.dir.x = 1;
-	state.player.dir.y = 0;
+	state.player.pos.x = 4.714069;
+	state.player.pos.y = 4.317344;
+	state.player.dir.x = -0.848101;
+	state.player.dir.y = -0.529835;
 	// define camera plane where the view will be projected onto
-	state.player.cam.x = 0;
-	state.player.cam.y = 0.66;
+	state.player.cam.x = 0.848101;
+	state.player.cam.y = -0.529835;
 
 	init_textures();
 	return 0;
@@ -83,7 +83,7 @@ float get_intercept_dist(player* p, wall* w, float* hit_pt) {
 	vec2 intc_pt;
 	float dist = -(((p->pos.x - w->start.x)*(w->start.y - w->end.y) - (p->pos.y - w->start.y)*(w->start.x - w->end.x)) / 
 			((p->dir.x)*(w->start.y - w->end.y) - (p->dir.y)*(w->start.x - w->end.x)));
-	if (!intercepts(p, w , dist) || dist  < 0.66)
+	if (!intercepts(p, w , dist) || dist  < 1.2)
 		return -1;
 	*hit_pt = fabs(((p->dir.x)*(p->pos.y - w->start.y) - (p->dir.y)*(p->pos.x - w->start.x)) / 
 			((p->dir.x)*(w->start.y - w->end.y) - (p->dir.y)*(w->start.x - w->end.x)));
@@ -96,11 +96,11 @@ void raycast(player* p, int slice) {
 	player temp_player;
 	float dist = INFINITY, current_dist;
 	float offset = ((float) slice / SCREEN_WIDTH) - 0.5;
-	temp_player.pos.x = p->pos.x + offset * (p->cam.x);
-	temp_player.pos.y = p->pos.y + offset * (p->cam.y);
+	temp_player.pos.x = p->pos.x + offset * (0.66 * p->cam.x) + p->dir.x;
+	temp_player.pos.y = p->pos.y + offset * (0.66 * p->cam.y) + p->dir.y;
 	temp_player.dir.x = p->dir.x;
 	temp_player.dir.y = p->dir.y;
-	int tex_idx = 32, wall_idx = -1;
+	int tex_idx = 10, wall_idx = -1;
 	float hit_pt, current_hit_pt;
 	for (int i = 0; i < current_map.num_sections; i++)
 		for (int j = 0; j < current_map.sections[i].num_walls; j++) {
