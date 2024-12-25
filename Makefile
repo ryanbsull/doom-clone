@@ -1,14 +1,17 @@
 CC = gcc
 CFLAGS = -lm -lSDL2_image -lSDL2 -g
 SRC_FILES := $(wildcard src/*.c)
-OUTPUT_FILES := $(patsubst src/%.c,build/%,$(SRC_FILES))
+OUTPUT_FILES := $(patsubst src/%.c,build/%.o,$(SRC_FILES))
 
-all: $(OUTPUT_FILES)
+all: doom
 
-build/%: src/%.c
+doom: $(OUTPUT_FILES) game.c
+	$(CC) $(CFLAGS) $^ -o $@
+
+build/%.o: src/%.c
 	@if [ ! -d "build" ]; then mkdir build; fi
-	$(CC) $(CFLAGS) $^ -o $@ 
+	$(CC) -g -c $^ -o $@ 
 
 clean:
-	rm -rf build/
+	rm -rf build/ doom*
 

@@ -21,6 +21,4 @@ typedef struct {
 	int x,y;
 } int_vec2;
 
-
-
 #endif

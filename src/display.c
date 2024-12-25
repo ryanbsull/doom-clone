@@ -1,24 +1,4 @@
-#ifndef DISPLAY_H
-#define DISPLAY_H
-
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-#include <string.h>
-#include <stdint.h>
-
-#define SCREEN_WIDTH		640
-#define SCREEN_HEIGHT		400
-
-#define TEXTURE_WIDTH		64
-#define TEXTURE_HEIGHT	64
-#define TEXTURE_BORDER	5
-#define TEX_FILE_WIDTH	626
-#define TEX_FILE_HEIGHT	833
-
-enum side {
-	x_side,
-	y_side
-};
+#include "../include/display.h"
 
 SDL_Surface* textures;
 
@@ -86,5 +66,3 @@ int render_screen(SDL_Texture* texture, SDL_Renderer* renderer, uint32_t* pixels
 
 	return 0;
 }
-
-#endif

@@ -3,10 +3,11 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_timer.h>
 #include <stdio.h>
-#include "player.h"
-#include "display.h"
-#include "util.h"
-#include "map.h"
+
+#include "include/util.h"
+#include "include/map.h"
+#include "include/player.h"
+#include "include/display.h"
 
 struct {
 	SDL_Window* win;
@@ -32,7 +33,7 @@ int main() {
 
 int init() {
 	state.win = SDL_CreateWindow(
-		"raycast_test",
+		"doom",
 		SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
 		SCREEN_WIDTH, SCREEN_HEIGHT,
 		SDL_WINDOW_SHOWN

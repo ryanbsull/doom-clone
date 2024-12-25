@@ -1,11 +1,4 @@
-#ifndef PLAYER_H
-#define PLAYER_H
-
-#include "util.h"
-#include <math.h>
-
-#define MVMT_SPEED    0.2
-#define ANGULAR_SPEED 0.1
+#include "../include/player.h"
 
 int map[] = {
 		32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,
@@ -25,13 +18,6 @@ int map[] = {
 		32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,32,
 		32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,
 };
-
-typedef struct {
-	vec2 pos;
-	vec2 dir;
-	vec2 cam;
-} player;
-
 
 void move(player* p, int dir) {
 	float angle = atan2(p->dir.y, p->dir.x);
@@ -56,5 +42,3 @@ void rotate(player* p, int dir) {
 	p->cam.x = -p->dir.y;
 	p->cam.y = p->dir.x;
 }
-
-#endif
