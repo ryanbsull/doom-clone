@@ -2,6 +2,7 @@
 
 SDL_Surface* textures;
 SDL_Surface* shotgun;
+uint8_t firing = 0;
 
 void display_textures(uint32_t* pixels) {
 	for (int i = 0; i < SCREEN_WIDTH; i++)
