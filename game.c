@@ -187,6 +187,7 @@ int game_loop() {
 	for (int i = 0; i < SCREEN_WIDTH; i++)
 		raycast(&state.player, i);
 
+	draw_shotgun(state.pixels);
 	render_screen(state.texture, state.renderer, state.pixels);
 	return 0;
 }
