@@ -156,6 +156,10 @@ void raycast(player* p, int slice) {
 
 int game_loop() {
 	clear_screen(state.pixels);
+	static int shotgun_idx = 0, time = 0, dt = 0;
+	int prev_time = time;
+	time = SDL_GetTicks();
+	dt += time - prev_time;
 	SDL_Event e;
 
 	while (SDL_PollEvent(&e)) {
@@ -179,6 +183,9 @@ int game_loop() {
 					case SDLK_p:
 						printf("Player Info:\n\tPosition: [%f,%f]\n\tDirection: [%f,%f]\n", state.player.pos.x, state.player.pos.y, state.player.dir.x, state.player.dir.y);
 						break;
+					case SDLK_e:
+						shotgun_idx = 1;
+						break;
 				}
 				break;
 		}
@@ -187,7 +194,11 @@ int game_loop() {
 	for (int i = 0; i < SCREEN_WIDTH; i++)
 		raycast(&state.player, i);
 
-	draw_shotgun(state.pixels);
+	draw_shotgun(state.pixels, shotgun_idx);
+	if (shotgun_idx != 0 && dt > 100) {
+		shotgun_idx = (shotgun_idx + 1) % 8;
+		dt = 0;
+	}
 	render_screen(state.texture, state.renderer, state.pixels);
 	return 0;
 }

@@ -26,11 +26,11 @@ void get_texture_idx(int idx, int* tex_x, int* tex_y) {
 
 void get_shotgun_idx(int idx, int* tex_x, int* tex_y) {
 	*tex_x = 0;
-	*tex_y = idx * SHTGN_HEIGHT;
+	*tex_y = idx * SHTGN_HEIGHT + idx;
 }
 
-int draw_shotgun(uint32_t* pixels) {
-	int tex_x, tex_y, idx = 0;
+int draw_shotgun(uint32_t* pixels, int idx) {
+	int tex_x, tex_y;
 	uint32_t color;
 	get_shotgun_idx(idx, &tex_x, &tex_y);
 	for (int i = 0; i < SHTGN_WIDTH * 2; i++) {
