@@ -33,6 +33,7 @@ void get_texture_idx(int idx, int* tex_x, int* tex_y);
 void get_shotgun_idx(int idx, int* tex_x, int* tex_y);
 int draw_shotgun(uint32_t* pixels, int idx);
 int draw_ray(uint32_t* pixels, int x, int hit_point, int start, int end, int idx, int side);
+int draw_point(uint32_t* pixels, player* p, vec2* pt);
 int draw_wall(player* p, wall* w);
 int clear_screen(uint32_t* pixels);
 int render_screen(SDL_Texture* texture, SDL_Renderer* renderer, uint32_t* pixels);

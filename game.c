@@ -62,62 +62,16 @@ int init() {
 	}
 
 	default_map(); // initialize default map
-	state.player.pos.x = 4.714069;
-	state.player.pos.y = 4.317344;
-	state.player.dir.x = -0.848101;
-	state.player.dir.y = -0.529835;
+	state.player.pos.x = 10;
+	state.player.pos.y = 10;
+	state.player.dir.x = 1;
+	state.player.dir.y = 0;
 	// define camera plane where the view will be projected onto
-	state.player.cam.x = 0.848101;
-	state.player.cam.y = -0.529835;
+	state.player.cam.x = 0;
+	state.player.cam.y = -1;
 
 	init_textures();
 	return 0;
-}
-
-int intercepts(player* p, wall* w, float dist) {
-	return (p->pos.x + dist * p->dir.x >= fmin(w->start.x, w->end.x) && p->pos.x + dist * p->dir.x <= fmax(w->start.x, w->end.x) &&
-		p->pos.y + dist * p->dir.y >= fmin(w->start.y, w->end.y) && p->pos.y + dist * p->dir.y <= fmax(w->start.y, w->end.y));
-}
-
-float get_intercept_dist(player* p, wall* w, float* hit_pt) {
-	vec2 intc_pt;
-	float dist = -(((p->pos.x - w->start.x)*(w->start.y - w->end.y) - (p->pos.y - w->start.y)*(w->start.x - w->end.x)) / 
-			((p->dir.x)*(w->start.y - w->end.y) - (p->dir.y)*(w->start.x - w->end.x)));
-	if (!intercepts(p, w , dist) || dist  < 1.2)
-		return -1;
-	*hit_pt = fabs(((p->dir.x)*(p->pos.y - w->start.y) - (p->dir.y)*(p->pos.x - w->start.x)) / 
-			((p->dir.x)*(w->start.y - w->end.y) - (p->dir.y)*(w->start.x - w->end.x)));
-	*hit_pt = *hit_pt * (sqrtf(pow(w->end.x - w->start.x, 2) + pow(w->end.y - w->start.y, 2)));
-	*hit_pt = *hit_pt - truncf(*hit_pt);
-	return fabs(dist);
-}
-
-void raycast(player* p, int slice) {
-	player temp_player;
-	float dist = INFINITY, current_dist;
-	float offset = ((float) slice / SCREEN_WIDTH) - 0.5;
-	temp_player.pos.x = p->pos.x + offset * (0.66 * p->cam.x) + p->dir.x;
-	temp_player.pos.y = p->pos.y + offset * (0.66 * p->cam.y) + p->dir.y;
-	temp_player.dir.x = p->dir.x;
-	temp_player.dir.y = p->dir.y;
-	int tex_idx = 10, wall_idx = -1;
-	float hit_pt, current_hit_pt;
-	for (int i = 0; i < current_map.num_sections; i++)
-		for (int j = 0; j < current_map.sections[i].num_walls; j++) {
-			current_dist = get_intercept_dist(&temp_player, 
-				&current_map.sections[i].walls[j], &current_hit_pt);
-			if (current_dist > 0 && current_dist < dist) {
-				wall_idx = j;
-				dist = current_dist;
-				hit_pt = current_hit_pt;
-			}
-		}
-	int tex_slice = (int)((float) TEXTURE_WIDTH * hit_pt);
-	int line_height = (int)(SCREEN_HEIGHT / dist);
-	int draw_start = (SCREEN_HEIGHT - line_height) / 2;
-	int draw_end = (SCREEN_HEIGHT + line_height) / 2;
-
-	draw_ray(state.pixels, slice, tex_slice, draw_start, draw_end, tex_idx, abs(wall_idx % 2));
 }
 
 int game_loop() {
@@ -157,14 +111,22 @@ int game_loop() {
 		}
 	}
 
-	for (int i = 0; i < SCREEN_WIDTH; i++)
-		raycast(&state.player, i);
+	vec2 test1;
+	vec2 test2;
+	test1.x = 20;
+	test1.y = 11;
+	test2.x = 25;
+	test2.y = 15;
+	draw_point(state.pixels, &state.player, &test1);
+	draw_point(state.pixels, &state.player, &test2);
 
+	/*
 	draw_shotgun(state.pixels, shotgun_idx);
 	if (shotgun_idx != 0 && dt > 100) {
 		shotgun_idx = (shotgun_idx + 1) % 8;
 		dt = 0;
 	}
+	*/
 	render_screen(state.texture, state.renderer, state.pixels);
 	return 0;
 }

@@ -44,23 +44,32 @@ int draw_shotgun(uint32_t* pixels, int idx) {
 	return 0;
 }
 
-int draw_ray(uint32_t* pixels, int x, int hit_point, int start, int end, int idx, int side) {
-	int y, tex_y, tex_x, tex_y_base; 
-	uint32_t color;
-	float step = TEXTURE_HEIGHT / (float)(end - start);
-	get_texture_idx((side == x_side) ? idx : idx-1, &tex_x, &tex_y_base);
-	tex_x += hit_point;
+int draw_point(uint32_t* pixels, player* p, vec2* pt) {
+	float dx, dy, dz, angle;
+	int screen_x, screen_y, screen_z;
+	
+	angle = -atan2(p->dir.y, p->dir.x);
+	dx = pt->x - p->pos.x; dy = pt->y - p->pos.y; dz = 0;
+	screen_x = dx*cos(angle) - dy*sin(angle);
+	screen_y = dy*cos(angle) - dx*sin(angle);
+	// TODO: implement Z-coordinates
+	screen_z = 0;
 
-	for (y = start; y < end; y++) {
-		tex_y = (y - start) * step;
-		color = ((uint32_t*)textures->pixels)[(tex_y + tex_y_base) * TEX_FILE_WIDTH + tex_x];
-		pixels[y * SCREEN_WIDTH + x] = color;
-	}
+	if (screen_y == 0)
+		return 1;
+	screen_x = screen_x * (SCREEN_WIDTH / screen_y) + SCREEN_WIDTH / 2;
+	screen_y = screen_z * (SCREEN_HEIGHT / screen_y) + SCREEN_HEIGHT / 2;
 
-	return 0;
+	if(screen_x > SCREEN_WIDTH || screen_x < 0 || screen_y > SCREEN_HEIGHT || screen_y < 0)
+		return 1;
+
+	pixels[screen_y * SCREEN_WIDTH + screen_x] = 0xFFFFFFFF;
+	return 0;	
 }
 
-int draw_wall(player* p, wall* w);
+int draw_wall(player* p, wall* w) {
+	return 0;
+}
 
 int clear_screen(uint32_t* pixels) {
 	for (int x = 0; x < SCREEN_WIDTH; x++)
