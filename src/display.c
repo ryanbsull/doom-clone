@@ -60,6 +60,8 @@ int draw_ray(uint32_t* pixels, int x, int hit_point, int start, int end, int idx
 	return 0;
 }
 
+int draw_wall(player* p, wall* w);
+
 int clear_screen(uint32_t* pixels) {
 	for (int x = 0; x < SCREEN_WIDTH; x++)
 		for(int y = 0; y < SCREEN_HEIGHT; y++)
