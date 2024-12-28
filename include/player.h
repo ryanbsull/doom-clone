@@ -4,7 +4,7 @@
 #include "util.h"
 #include <math.h>
 
-#define MVMT_SPEED    4
+#define MVMT_SPEED    10
 #define ANGULAR_SPEED 4
 
 typedef struct {

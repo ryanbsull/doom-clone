@@ -44,25 +44,29 @@ int draw_shotgun(uint32_t* pixels, int idx) {
 	return 0;
 }
 
-int draw_point(uint32_t* pixels, player* p, vec2* pt) {
-	float dx, dy, dz;
-	int screen_x, screen_y, screen_z;
-	
-	dx = pt->x - p->pos.x; dy = pt->y - p->pos.y; dz = 0;
-	screen_x = dx*cos((float)p->angle * 2 * M_PI / 360) - dy*sin((float)p->angle * 2 * M_PI / 360);
-	screen_y = dy*cos((float)p->angle * 2 * M_PI / 360) - dx*sin((float)p->angle * 2 * M_PI / 360);
-	// TODO: implement Z-coordinates
-	screen_z = 0 - 1;
+int draw_point(uint32_t* pixels, player* p, vec2* pt, int* print) {
+	int dx, dy, dz, placeholder_z;
+	int_vec2 screen;
+	float cs = cos(p->angle * M_PI / 180), sn = sin(p->angle * M_PI / 180);
 
-	if (screen_y == 0)
+	dx = pt->x - p->pos.x; dy = pt->y - p->pos.y; dz = 0 - 10; // TODO: implement Z-tracking
+	screen.x = dx * cs - dy * sn;
+	screen.y = dy * cs - dx * sn;
+	placeholder_z = 0 - 3 + (screen.y / 32);
+	if (*print == 1)
+		printf("RELATIVE: [%d, %d]\nANGLE: [COS: %f, SIN: %f]\nDIFF: [%d,%d]\n", screen.x, screen.y, cs, sn, dx, dy);
+
+	if (screen.y == 0)
 		return 1;
-	screen_x = screen_x * (SCREEN_WIDTH / screen_y) + SCREEN_WIDTH / 2;
-	screen_y = screen_z * (SCREEN_HEIGHT / screen_y) + SCREEN_HEIGHT / 2;
+	screen.x = screen.x * 200 / screen.y;
+	screen.y = placeholder_z * 200 / screen.y;
 
-	if(screen_x > SCREEN_WIDTH || screen_x < 0 || screen_y > SCREEN_HEIGHT || screen_y < 0)
-		return 1;
-
-	pixels[screen_y * SCREEN_WIDTH + screen_x] = 0xFFFFFFFF;
+	if (*print == 1) {
+		printf("SCREEN: [%d, %d]\n", screen.x, screen.y);
+		*print = 0;
+	}
+	if (screen.x >= 0 && screen.x < SCREEN_WIDTH && screen.y >= 0 && screen.y < SCREEN_HEIGHT)
+		pixels[screen.y * SCREEN_WIDTH + screen.x] = 0xFFFFFFFF;
 	return 0;	
 }
 
@@ -89,7 +93,7 @@ int render_screen(SDL_Texture* texture, SDL_Renderer* renderer, uint32_t* pixels
 		texture,
 		NULL, NULL,
 		0.0, NULL,
-		SDL_FLIP_NONE
+		SDL_FLIP_VERTICAL
 	);
 	SDL_RenderPresent(renderer);
 

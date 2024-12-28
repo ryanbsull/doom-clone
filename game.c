@@ -61,9 +61,9 @@ int init() {
 	}
 
 	default_map(); // initialize default map
-	state.player.pos.x = 10;
-	state.player.pos.y = 10;
-	state.player.angle = 0;
+	state.player.pos.x = 0;
+	state.player.pos.y = 0;
+	state.player.angle = 90;
 
 	init_textures();
 	return 0;
@@ -72,6 +72,7 @@ int init() {
 int game_loop() {
 	clear_screen(state.pixels);
 	static int shotgun_idx = 0, time = 0, dt = 0;
+	int print = 0;
 	int prev_time = time;
 	time = SDL_GetTicks();
 	dt += time - prev_time;
@@ -97,6 +98,7 @@ int game_loop() {
 						break;
 					case SDLK_p:
 						printf("Player Info:\n\tPosition: [%f,%f]\n\tDirection: %u degrees\n", state.player.pos.x, state.player.pos.y, state.player.angle);
+						print = 1;
 						break;
 					case SDLK_e:
 						shotgun_idx = 1;
@@ -106,14 +108,10 @@ int game_loop() {
 		}
 	}
 
-	vec2 test1;
-	vec2 test2;
-	test1.x = 20;
-	test1.y = 11;
-	test2.x = 25;
-	test2.y = 15;
-	draw_point(state.pixels, &state.player, &test1);
-	draw_point(state.pixels, &state.player, &test2);
+	vec2 test;
+	test.x = 40;
+	test.y = 10;
+	draw_point(state.pixels, &state.player, &test, &print);
 
 	/*
 	draw_shotgun(state.pixels, shotgun_idx);
