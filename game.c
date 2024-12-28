@@ -2,7 +2,6 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_timer.h>
-#include <math.h>
 #include <stdio.h>
 
 #include "include/util.h"
@@ -64,11 +63,7 @@ int init() {
 	default_map(); // initialize default map
 	state.player.pos.x = 10;
 	state.player.pos.y = 10;
-	state.player.dir.x = 1;
-	state.player.dir.y = 0;
-	// define camera plane where the view will be projected onto
-	state.player.cam.x = 0;
-	state.player.cam.y = -1;
+	state.player.angle = 0;
 
 	init_textures();
 	return 0;
@@ -101,7 +96,7 @@ int game_loop() {
 						rotate(&state.player, RIGHT);
 						break;
 					case SDLK_p:
-						printf("Player Info:\n\tPosition: [%f,%f]\n\tDirection: [%f,%f]\n", state.player.pos.x, state.player.pos.y, state.player.dir.x, state.player.dir.y);
+						printf("Player Info:\n\tPosition: [%f,%f]\n\tDirection: %u degrees\n", state.player.pos.x, state.player.pos.y, state.player.angle);
 						break;
 					case SDLK_e:
 						shotgun_idx = 1;

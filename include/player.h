@@ -4,13 +4,12 @@
 #include "util.h"
 #include <math.h>
 
-#define MVMT_SPEED    0.2
-#define ANGULAR_SPEED 0.1
+#define MVMT_SPEED    4
+#define ANGULAR_SPEED 4
 
 typedef struct {
 	vec2 pos;
-	vec2 dir;
-	vec2 cam;
+	int angle; // [0-360] degrees
 } player;
 
 extern int map[];

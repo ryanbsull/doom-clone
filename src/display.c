@@ -45,15 +45,14 @@ int draw_shotgun(uint32_t* pixels, int idx) {
 }
 
 int draw_point(uint32_t* pixels, player* p, vec2* pt) {
-	float dx, dy, dz, angle;
+	float dx, dy, dz;
 	int screen_x, screen_y, screen_z;
 	
-	angle = -atan2(p->dir.y, p->dir.x);
 	dx = pt->x - p->pos.x; dy = pt->y - p->pos.y; dz = 0;
-	screen_x = dx*cos(angle) - dy*sin(angle);
-	screen_y = dy*cos(angle) - dx*sin(angle);
+	screen_x = dx*cos((float)p->angle * 2 * M_PI / 360) - dy*sin((float)p->angle * 2 * M_PI / 360);
+	screen_y = dy*cos((float)p->angle * 2 * M_PI / 360) - dx*sin((float)p->angle * 2 * M_PI / 360);
 	// TODO: implement Z-coordinates
-	screen_z = 0;
+	screen_z = 0 - 1;
 
 	if (screen_y == 0)
 		return 1;
