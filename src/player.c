@@ -2,7 +2,7 @@
 
 void move(player* p, int dir) {
 	p->pos.x += cos((float)p->angle * M_PI / 180) * dir * MVMT_SPEED;
-	p->pos.y += sin((float)p->angle * M_PI / 180) * dir * MVMT_SPEED;
+	p->pos.z += sin((float)p->angle * M_PI / 180) * dir * MVMT_SPEED;
 }
 
 void rotate(player* p, int dir) {
