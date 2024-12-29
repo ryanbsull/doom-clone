@@ -36,9 +36,9 @@ int draw_shotgun(uint32_t* pixels, int idx) {
 	get_shotgun_idx(idx, &tex_x, &tex_y);
 	for (int i = 0; i < SHTGN_WIDTH * 2; i++) {
 		for (int j = 0; j < SHTGN_HEIGHT * 2; j++) {
-			color = ((uint32_t*)shotgun->pixels)[(tex_y + (j / 2)) * SHTGN_FILE_WIDTH + (tex_x + (i / 2))];
+			color = ((uint32_t*)shotgun->pixels)[(tex_y + (SHTGN_HEIGHT - (j / 2))) * SHTGN_FILE_WIDTH + (tex_x + (i / 2))];
 			if(color != 0xff0fffff)
-				pixels[(j + SCREEN_HEIGHT - 2 * SHTGN_HEIGHT) * SCREEN_WIDTH + (i + (SCREEN_WIDTH - (2 * SHTGN_WIDTH + 190)) / 2)] = color;
+				pixels[j * SCREEN_WIDTH + (i + (SCREEN_WIDTH - (2 * SHTGN_WIDTH + 190)) / 2)] = color;
 		}
 	}
 	return 0;

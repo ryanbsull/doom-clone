@@ -60,13 +60,13 @@ int init() {
 		return 1;
 	}
 
-	// default_map(); // initialize default map
+	default_map(); // initialize default map
 	state.player.pos.x = 0;
 	state.player.pos.y = 5;
 	state.player.pos.z = 0; // player will have a height of 1
 	state.player.angle = 0;
 
-	// init_textures();
+	init_textures();
 	return 0;
 }
 
@@ -178,16 +178,12 @@ int game_loop() {
 
 	for (int i = 0; i < 8; i++)
 		draw_point(state.pixels, &state.player, &cube[i], &print);
-	// if (minimap)
-	// 	show_minimap(state.pixels, &state.player, &test);
 
-	/*
 	draw_shotgun(state.pixels, shotgun_idx);
-	if (shotgun_idx != 0 && dt > 100) {
-		shotgun_idx = (shotgun_idx + 1) % 8;
+	if (shotgun_idx != 0 && dt > 150) {
+		shotgun_idx = (shotgun_idx + 1) % 7;
 		dt = 0;
 	}
-	*/
 	render_screen(state.texture, state.renderer, state.pixels);
 	return 0;
 }
