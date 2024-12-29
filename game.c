@@ -69,9 +69,61 @@ int init() {
 	return 0;
 }
 
+void draw_to_minimap(u32* pixels, int x, int y, u32 color) {
+	if (y < 0 || (((SCREEN_HEIGHT * 3) / 4) + y) > SCREEN_HEIGHT || ((SCREEN_WIDTH * 3) / 4) + x > SCREEN_WIDTH || x < 0)
+		return;
+	pixels[(((SCREEN_HEIGHT * 3) / 4) + y)* SCREEN_WIDTH + (x + (SCREEN_WIDTH * 3) / 4)] = color;
+}
+
+int show_minimap(u32* pixels, player* p, vec2* pt) {
+	for(int i = (SCREEN_WIDTH * 3 / 4); i < SCREEN_WIDTH; i+= 3)
+		pixels[(SCREEN_HEIGHT * 3 / 4) * SCREEN_WIDTH + i] = 0xFFFFFFFF;
+	for(int i = (SCREEN_HEIGHT * 3 / 4); i < SCREEN_HEIGHT; i+= 3)
+		pixels[i * SCREEN_WIDTH + (SCREEN_WIDTH * 3 / 4)] = 0xFFFFFFFF;
+	
+	int dx = pt->x - p->pos.x, dy = pt->y - p->pos.y, sign = 1;
+	float cs = cos(p->angle * M_PI / 180), sn = sin(p->angle * M_PI / 180);
+
+	// draw player
+	draw_to_minimap(pixels, (int)p->pos.x, (int)p->pos.y, 0xFF00FFFF);
+
+	// draw point
+	draw_to_minimap(pixels, (int)pt->x, (int)pt->y, 0xFFFF00FF);
+
+	// draw direction vector
+	for (int i = 2; i < 10; i++)
+		draw_to_minimap(pixels, (int)(p->pos.x + i * cs), ((int)p->pos.y + i * sn), 0x00FFFFFF);
+
+	// draw dx, dy lines from player to point
+	if (dx < 0)
+		sign = -1;
+	for (int i = 0; i < dx * sign; i+=2)
+		draw_to_minimap(pixels, (int)(p->pos.x + i * sign), (int)p->pos.y, 0xFFFFFF00);
+	sign = 1;
+	if (dy < 0)
+		sign = -1;
+	for (int i = 0; i < dy * sign; i+=2)
+		draw_to_minimap(pixels, (int)(p->pos.x + dx), ((int)p->pos.y + i * sign), 0xFFFFFF00);
+	sign = 1;
+
+	// show relative x and y directions
+	int world_x = dx * cs - dy * sn;
+	if (world_x < 0)
+		sign = -1;
+	for (int i = 0; i < world_x * sign; i++)
+		draw_to_minimap(pixels, (int)(p->pos.x + i * sign), ((int)p->pos.y), 0xF0F0F0F0);
+	sign = 1;
+	int world_y = dy * cs - dx * sn;
+	if (world_y < 0)
+		sign = -1;
+	for (int i = 0; i < world_y * sign; i++)
+		draw_to_minimap(pixels, (int)(p->pos.x), ((int)p->pos.y + i * sign), 0xF0F0F0F0);
+
+	return 0;
+}
 int game_loop() {
 	clear_screen(state.pixels);
-	static int shotgun_idx = 0, time = 0, dt = 0;
+	static int shotgun_idx = 0, minimap = 0, time = 0, dt = 0;
 	int print = 0;
 	int prev_time = time;
 	time = SDL_GetTicks();
@@ -103,6 +155,9 @@ int game_loop() {
 					case SDLK_e:
 						shotgun_idx = 1;
 						break;
+					case SDLK_t:
+						minimap = (minimap + 1) % 2;
+						break;
 				}
 				break;
 		}
@@ -112,6 +167,8 @@ int game_loop() {
 	test.x = 40;
 	test.y = 10;
 	draw_point(state.pixels, &state.player, &test, &print);
+	if (minimap)
+		show_minimap(state.pixels, &state.player, &test);
 
 	/*
 	draw_shotgun(state.pixels, shotgun_idx);
