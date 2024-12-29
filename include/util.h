@@ -21,4 +21,12 @@ typedef struct {
 	int x,y;
 } int_vec2;
 
+typedef struct {
+	float x,y,z;
+} vec3;
+
+typedef struct {
+	int x,y,z;
+} int_vec3;
+
 #endif

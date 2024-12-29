@@ -60,12 +60,13 @@ int init() {
 		return 1;
 	}
 
-	default_map(); // initialize default map
+	// default_map(); // initialize default map
 	state.player.pos.x = 0;
 	state.player.pos.y = 0;
-	state.player.angle = 90;
+	state.player.pos.z = 1; // player will have a height of 1
+	state.player.angle = 0;
 
-	init_textures();
+	// init_textures();
 	return 0;
 }
 
@@ -75,7 +76,7 @@ void draw_to_minimap(u32* pixels, int x, int y, u32 color) {
 	pixels[(((SCREEN_HEIGHT * 3) / 4) + y)* SCREEN_WIDTH + (x + (SCREEN_WIDTH * 3) / 4)] = color;
 }
 
-int show_minimap(u32* pixels, player* p, vec2* pt) {
+int show_minimap(u32* pixels, player* p, vec3* pt) {
 	for(int i = (SCREEN_WIDTH * 3 / 4); i < SCREEN_WIDTH; i+= 3)
 		pixels[(SCREEN_HEIGHT * 3 / 4) * SCREEN_WIDTH + i] = 0xFFFFFFFF;
 	for(int i = (SCREEN_HEIGHT * 3 / 4); i < SCREEN_HEIGHT; i+= 3)
@@ -107,17 +108,18 @@ int show_minimap(u32* pixels, player* p, vec2* pt) {
 	sign = 1;
 
 	// show relative x and y directions
-	int world_x = dx * cs - dy * sn;
+	int world_x = dy * cs - dx * sn;
+	int world_y = dx * cs - dy * sn;
+	world_y *= (sqrt(pow(dx, 2) + pow(dy, 2)) / sqrt(pow(world_x, 2) + pow(world_y, 2)));
+	if (world_y < 0)
+	 	sign = -1;
+	for (int i = 0; i < world_y * sign; i++)
+	 	draw_to_minimap(pixels, (int)(p->pos.x + i * sign * cs), ((int)p->pos.y + i * sign * sn), 0xF0F8F088);
+	sign = 1;
 	if (world_x < 0)
 		sign = -1;
 	for (int i = 0; i < world_x * sign; i++)
-		draw_to_minimap(pixels, (int)(p->pos.x + i * sign), ((int)p->pos.y), 0xF0F0F0F0);
-	sign = 1;
-	int world_y = dy * cs - dx * sn;
-	if (world_y < 0)
-		sign = -1;
-	for (int i = 0; i < world_y * sign; i++)
-		draw_to_minimap(pixels, (int)(p->pos.x), ((int)p->pos.y + i * sign), 0xF0F0F0F0);
+		draw_to_minimap(pixels, (int)(p->pos.x + i * sign * (-sn) + (world_y * cs)), ((int)p->pos.y + i * sign * cs + (world_y * sn)), 0xF0F8F088);
 
 	return 0;
 }
@@ -149,7 +151,7 @@ int game_loop() {
 						rotate(&state.player, RIGHT);
 						break;
 					case SDLK_p:
-						printf("Player Info:\n\tPosition: [%f,%f]\n\tDirection: %u degrees\n", state.player.pos.x, state.player.pos.y, state.player.angle);
+						printf("Player Info:\n\tPosition: [%f,%f,%f]\n\tDirection: %u degrees\n", state.player.pos.x, state.player.pos.y, state.player.pos.z, state.player.angle);
 						print = 1;
 						break;
 					case SDLK_e:
@@ -163,9 +165,10 @@ int game_loop() {
 		}
 	}
 
-	vec2 test;
-	test.x = 40;
+	vec3 test;
+	test.x = 0;
 	test.y = 10;
+	test.z = 0;
 	draw_point(state.pixels, &state.player, &test, &print);
 	if (minimap)
 		show_minimap(state.pixels, &state.player, &test);

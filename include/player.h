@@ -8,7 +8,7 @@
 #define ANGULAR_SPEED 4
 
 typedef struct {
-	vec2 pos;
+	vec3 pos;
 	int angle; // [0-360] degrees
 } player;
 
