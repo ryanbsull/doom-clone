@@ -44,7 +44,7 @@ int draw_shotgun(uint32_t* pixels, int idx) {
 	return 0;
 }
 
-int draw_point(uint32_t* pixels, player* p, vec3* pt, int* print) {
+int draw_point(uint32_t* pixels, player* p, vec3* pt) {
 	int dx = pt->x - p->pos.x, dy = p->pos.y - pt->y, dz = pt->z - p->pos.z;
 	// add 90 degrees since we want to project onto the camera plane which is perpendicular to the player
 	float cs = cos((p->angle + 90) * M_PI / 180), sn = sin((p->angle + 90) * M_PI / 180);
@@ -64,6 +64,14 @@ int draw_point(uint32_t* pixels, player* p, vec3* pt, int* print) {
 		pixels[(screen.y * SCREEN_WIDTH) + screen.x] = 0xFFFFFFFF;
 
 	return 0;	
+}
+
+void clip_wall(float* clip_x, int* clip_y, float* clip_z, vec3* start) {
+	float d = start->z - *clip_z; if (d == 0) {d = 1;}
+	float s = *clip_z / d;
+	*clip_x += s*(start->x - *clip_x);
+	*clip_y += s*(start->y - *clip_y);
+	*clip_z += s*(start->z - *clip_z); if (*clip_z >= -0.000001) {*clip_z = -1;}
 }
 
 void draw_line(u32* pixels, int_vec2* start, int_vec2* end) {
@@ -93,9 +101,16 @@ int draw_wall(u32* pixels, player* p, wall* w) {
 	rot_xe = dx_e * cs + dz_e * sn;
 	rot_zs = dz_s * cs - dx_s * sn;
 	rot_ze = dz_e * cs - dx_e * sn;
-	// TODO: improve detection of whether wall is in sight
-	if (rot_zs >= 0 || rot_ze >= 0)
+	if (rot_zs >= 0 && rot_ze >= 0)
 		return 1;
+	if (rot_zs >= 0) {
+		clip_wall(&rot_xs, &dy_t, &rot_zs, &(vec3){rot_xe, dy_t, rot_ze});
+		clip_wall(&rot_xs, &dy_b, &rot_zs, &(vec3){rot_xe, dy_b, rot_ze});
+	}
+	if (rot_ze >= 0) {
+		clip_wall(&rot_xe, &dy_b, &rot_ze, &(vec3){rot_xs, dy_b, rot_zs});
+		clip_wall(&rot_xe, &dy_t, &rot_ze, &(vec3){rot_xs, dy_t, rot_zs});
+	}
 
 	p0_s.x = SCREEN_WIDTH / 2 + (200 * rot_xs / rot_zs);
 	p0_s.y = SCREEN_HEIGHT / 2 + (200 * dy_t / rot_zs);
