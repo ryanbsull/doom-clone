@@ -176,19 +176,13 @@ int game_loop() {
 		}
 	}
 
-	vec3 cube[8];
-	cube[0].x = 10; cube[0].y = 0; cube[0].z = 10;
-	cube[1].x = 10; cube[1].y = 10; cube[1].z = 10;
-	cube[2].x = 20; cube[2].y = 0; cube[2].z = 10;
-	cube[3].x = 20; cube[3].y = 10; cube[3].z = 10;
-
-	cube[4].x = 10; cube[4].y = 0; cube[4].z = 20;
-	cube[5].x = 10; cube[5].y = 10; cube[5].z = 20;
-	cube[6].x = 20; cube[6].y = 0; cube[6].z = 20;
-	cube[7].x = 20; cube[7].y = 10; cube[7].z = 20;
-
-	for (int i = 0; i < 8; i++)
-		draw_point(state.pixels, &state.player, &cube[i], &print);
+	wall cube[4];
+	cube[0].height = 10; cube[0].start.x = 10; cube[0].start.y = 10; cube[0].end.x = 20; cube[0].end.y = 10;
+	cube[1].height = 10; cube[1].start.x = 20; cube[1].start.y = 10; cube[1].end.x = 20; cube[1].end.y = 20;
+	cube[2].height = 10; cube[2].start.x = 20; cube[2].start.y = 20; cube[2].end.x = 10; cube[2].end.y = 20;
+	cube[3].height = 10; cube[3].start.x = 10; cube[3].start.y = 20; cube[3].end.x = 10; cube[3].end.y = 10;
+	for (int i = 0; i < 4; i++)
+		draw_wall(state.pixels, &state.player, &cube[i]);
 
 	draw_shotgun(state.pixels, shotgun_idx);
 	if (shotgun_idx != 0 && dt > 150) {
