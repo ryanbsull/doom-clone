@@ -4,8 +4,8 @@
 #include <stdint.h>
 
 enum dir {
-	LEFT = 1,
-	RIGHT = -1,
+	LEFT = 2,
+	RIGHT = -2,
 	FWD = 1,
 	BACK = -1,
 };

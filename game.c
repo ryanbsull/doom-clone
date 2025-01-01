@@ -156,10 +156,16 @@ int game_loop() {
 						move(&state.player, BACK);
 						break;
 					case SDLK_a:
-						rotate(&state.player, LEFT);
+						move(&state.player, LEFT);
 						break;
 					case SDLK_d:
+						move(&state.player, RIGHT);
+						break;
+					case SDLK_l:
 						rotate(&state.player, RIGHT);
+						break;
+					case SDLK_j:
+						rotate(&state.player, LEFT);
 						break;
 					case SDLK_p:
 						printf("Player Info:\n\tPosition: [%f,%f,%f]\n\tDirection: %u degrees\n", state.player.pos.x, state.player.pos.y, state.player.pos.z, state.player.angle);
