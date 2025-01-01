@@ -12,31 +12,38 @@ int default_map() {
   current_map.sections[0].walls[0].start.y = 0;
   current_map.sections[0].walls[0].end.x = 15;
   current_map.sections[0].walls[0].end.y = 0;
+  current_map.sections[0].walls[0].height = 10;
   current_map.sections[0].walls[1].start.x = 15;
   current_map.sections[0].walls[1].start.y = 0;
   current_map.sections[0].walls[1].end.x = 15;
   current_map.sections[0].walls[1].end.y = 15;
+  current_map.sections[0].walls[1].height = 10;
   current_map.sections[0].walls[2].start.x = 15;
   current_map.sections[0].walls[2].start.y = 15;
   current_map.sections[0].walls[2].end.x = 0;
   current_map.sections[0].walls[2].end.y = 15;
+  current_map.sections[0].walls[2].height = 110;
   current_map.sections[0].walls[3].start.x = 0;
   current_map.sections[0].walls[3].start.y = 15;
   current_map.sections[0].walls[3].end.x = 0;
   current_map.sections[0].walls[3].end.y = 0;
+  current_map.sections[0].walls[3].height = 10;
   // triangle within the room
   current_map.sections[0].walls[4].start.x = 2;
   current_map.sections[0].walls[4].start.y = 2;
   current_map.sections[0].walls[4].end.x = 1;
   current_map.sections[0].walls[4].end.y = 3;
+  current_map.sections[0].walls[4].height = 10;
   current_map.sections[0].walls[5].start.x = 1;
   current_map.sections[0].walls[5].start.y = 3;
   current_map.sections[0].walls[5].end.x = 3;
   current_map.sections[0].walls[5].end.y = 3;
+  current_map.sections[0].walls[5].height = 10;
   current_map.sections[0].walls[6].start.x = 3;
   current_map.sections[0].walls[6].start.y = 3;
   current_map.sections[0].walls[6].end.x = 2;
   current_map.sections[0].walls[6].end.y = 2;
+  current_map.sections[0].walls[6].height = 10;
   return 0;
 }
 

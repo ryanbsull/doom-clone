@@ -176,14 +176,17 @@ int game_loop() {
 		}
 	}
 
-	wall cube[4];
-	cube[0].height = 10; cube[0].start.x = 10; cube[0].start.y = 10; cube[0].end.x = 20; cube[0].end.y = 10;
-	cube[1].height = 10; cube[1].start.x = 20; cube[1].start.y = 10; cube[1].end.x = 20; cube[1].end.y = 20;
-	cube[2].height = 10; cube[2].start.x = 20; cube[2].start.y = 20; cube[2].end.x = 10; cube[2].end.y = 20;
-	cube[3].height = 10; cube[3].start.x = 10; cube[3].start.y = 20; cube[3].end.x = 10; cube[3].end.y = 10;
-	for (int i = 0; i < 4; i++)
-		draw_wall(state.pixels, &state.player, &cube[i]);
+	// wall cube[4];
+	// cube[0].height = 10; cube[0].start.x = 10; cube[0].start.y = 10; cube[0].end.x = 20; cube[0].end.y = 10;
+	// cube[1].height = 10; cube[1].start.x = 20; cube[1].start.y = 10; cube[1].end.x = 20; cube[1].end.y = 20;
+	// cube[2].height = 10; cube[2].start.x = 20; cube[2].start.y = 20; cube[2].end.x = 10; cube[2].end.y = 20;
+	// cube[3].height = 10; cube[3].start.x = 10; cube[3].start.y = 20; cube[3].end.x = 10; cube[3].end.y = 10;
+	// for (int i = 0; i < 4; i++)
+	// 	draw_wall(state.pixels, &state.player, &cube[i]);
 
+	for (int i = 0; i < current_map.sections[0].num_walls; i++)
+		draw_wall(state.pixels, &state.player, &current_map.sections[0].walls[i]);
+	
 	draw_shotgun(state.pixels, shotgun_idx);
 	if (shotgun_idx != 0 && dt > 150) {
 		shotgun_idx = (shotgun_idx + 1) % 7;
