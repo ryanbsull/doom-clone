@@ -1,4 +1,5 @@
 #include "../include/display.h"
+#include <stdint.h>
 
 SDL_Surface* textures;
 SDL_Surface* shotgun;
@@ -110,6 +111,39 @@ void fill_wall(u32* pixels, int_vec2* start_t, int_vec2* end_t, int_vec2* start_
 	}
 }
 
+void fill_wall_textured(u32* pixels,
+	int_vec2* start_t, int_vec2* end_t,
+	int_vec2* start_b, int_vec2* end_b, int tex_idx, float wall_len) {
+	int dx = end_t->x - start_t->x, dy_t = end_t->y - start_t->y, dy_b = end_b->y - start_b->y;
+	float step_x = (TEXTURE_WIDTH * wall_len) / dx, step_y;
+	int sign = (dx < 0) ? -1 : 1;
+	int tex_x_base, tex_y_base, tex_x, tex_y;
+	int x, y_b, y_t;
+	get_texture_idx(tex_idx, &tex_x_base, &tex_y_base);
+		
+	float slope_t = (float)dy_t / dx;
+	float slope_b = (float)dy_b / dx;
+
+	for (float i = 0; i < dx; i++) {
+		x = start_b->x + i;
+		y_b = start_b->y + (i * slope_b);
+		if (y_b < 0) {
+			y_b = 0;
+		}
+		y_t = start_t->y + (i * slope_t);
+		if (y_t >= SCREEN_HEIGHT - 1) {
+			y_t = SCREEN_HEIGHT;
+		}
+		step_y = TEXTURE_HEIGHT / (float)(y_t - y_b);
+		for(int j = y_b; j < y_t; j++)
+			if (x >= 0 && x < SCREEN_WIDTH) {
+				tex_x = ((int)(i* step_x) % TEXTURE_WIDTH) + tex_x_base;
+				tex_y = ((j - y_b) * step_y) + tex_y_base;
+				pixels[(j * SCREEN_WIDTH) + x] = ((uint32_t*)textures->pixels)[tex_y * TEX_FILE_WIDTH + tex_x];
+			}
+	}
+}
+
 int draw_wall(u32* pixels, player* p, wall* w) {
 	int dx_s = w->start.x - p->pos.x, dx_e = w->end.x - p->pos.x,
 	dy_t = p->pos.y - w->height, dy_b = p->pos.y - 0, dz_s = w->start.y - p->pos.z, dz_e = w->end.y - p->pos.z;
@@ -144,8 +178,11 @@ int draw_wall(u32* pixels, player* p, wall* w) {
 	pb_e.x = SCREEN_WIDTH / 2 + (200 * rot_xe / rot_ze);
 	pb_e.y = SCREEN_HEIGHT / 2 + (200 * dy_b / rot_ze);
 
+	float dx = w->end.x - w->start.x, dy = w->end.y - w->start.y;
 
-	fill_wall(pixels, &pt_s, &pt_e, &pb_s, &pb_e);
+	// fill_wall(pixels, &pt_s, &pt_e, &pb_s, &pb_e);
+	fill_wall_textured(pixels, &pt_s, &pt_e, &pb_s, &pb_e,
+		w->texture, sqrt(dx * dx + dy * dy) / 5.0);
 	
 	return 0;
 }
