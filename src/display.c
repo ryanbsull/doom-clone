@@ -3,6 +3,7 @@
 
 SDL_Surface* textures;
 SDL_Surface* shotgun;
+SDL_Surface* pause_logo;
 uint8_t firing = 0;
 
 void display_textures(uint32_t* pixels) {
@@ -18,6 +19,7 @@ int init_textures() {
 	// with texture[8][11] being blank 
 	textures = IMG_Load("textures/environment.png");
 	shotgun = IMG_Load("textures/shotgun.png");
+	pause_logo = IMG_Load("textures/pause_logo.png");
 	return 0;
 }
 
@@ -184,6 +186,20 @@ int draw_wall(u32* pixels, player* p, wall* w) {
 	fill_wall_textured(pixels, &pt_s, &pt_e, &pb_s, &pb_e,
 		w->texture, sqrt(dx * dx + dy * dy) / 5.0);
 	
+	return 0;
+}
+
+int pause_screen(uint32_t* pixels) {
+	float step_x = (float)2 * PAUSE_LOGO_W / (SCREEN_WIDTH);
+	float step_y = (float)2 * PAUSE_LOGO_H / (SCREEN_HEIGHT);
+	int tex_x, tex_y;
+	for (int x = SCREEN_WIDTH / 4; x < 3 * SCREEN_WIDTH / 4; x++) {
+		for (int y = SCREEN_HEIGHT / 4; y < 3 * SCREEN_HEIGHT / 4; y++) {
+			tex_x = (x - (SCREEN_WIDTH / 4)) * step_x;
+			tex_y = PAUSE_LOGO_H - ((y - (SCREEN_HEIGHT / 4)) * step_y) - 1;
+			pixels[y * SCREEN_WIDTH + x] = ((uint32_t*)pause_logo->pixels)[tex_y * PAUSE_LOGO_W + tex_x];
+		}
+	}
 	return 0;
 }
 

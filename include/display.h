@@ -8,19 +8,22 @@
 #include "map.h"
 #include "player.h"
 
-#define SCREEN_WIDTH		640
-#define SCREEN_HEIGHT		400
+#define SCREEN_WIDTH				640
+#define SCREEN_HEIGHT				400
 
-#define TEXTURE_WIDTH		64
-#define TEXTURE_HEIGHT	64
-#define TEXTURE_BORDER	5
-#define TEX_FILE_WIDTH	626
-#define TEX_FILE_HEIGHT	833
+#define TEXTURE_WIDTH				64
+#define TEXTURE_HEIGHT			64
+#define TEXTURE_BORDER			5
+#define TEX_FILE_WIDTH			626
+#define TEX_FILE_HEIGHT			833
 
 #define SHTGN_WIDTH					230
 #define SHTGN_HEIGHT				162
 #define SHTGN_FILE_WIDTH		230
 #define SHTGN_FILE_HEIGHT		1300
+
+#define PAUSE_LOGO_W				1126
+#define PAUSE_LOGO_H				710
 
 enum side {
 	x_side,
@@ -37,5 +40,6 @@ int draw_point(uint32_t* pixels, player* p, vec3* pt);
 int draw_wall(uint32_t* pixels, player* p, wall* w);
 int clear_screen(uint32_t* pixels);
 int render_screen(SDL_Texture* texture, SDL_Renderer* renderer, uint32_t* pixels);
+int pause_screen(uint32_t* pixels);
 
 #endif

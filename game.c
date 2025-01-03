@@ -1,6 +1,7 @@
 #include "SDL2/SDL_render.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_keycode.h>
 #include <SDL2/SDL_timer.h>
 #include <stdio.h>
 
@@ -136,7 +137,7 @@ int show_minimap(u32* pixels, player* p, vec3* pt) {
 }
 int game_loop() {
 	clear_screen(state.pixels);
-	static int shotgun_idx = 0, minimap = 0, time = 0, dt = 0;
+	static int shotgun_idx = 0, minimap = 0, time = 0, dt = 0, pause = 1;
 	int print = 0;
 	int prev_time = time;
 	time = SDL_GetTicks();
@@ -149,33 +150,44 @@ int game_loop() {
 				return 1;
 			case SDL_KEYDOWN:
 				switch (e.key.keysym.sym) {
+					case SDLK_ESCAPE:
+						pause = (pause + 1) % 2;
+						break;
 					case SDLK_w:
-						move(&state.player, FWD);
+						if (!pause)
+							move(&state.player, FWD);
 						break;
 					case SDLK_s:
-						move(&state.player, BACK);
+						if (!pause)
+							move(&state.player, BACK);
 						break;
 					case SDLK_a:
-						move(&state.player, LEFT);
+						if (!pause)
+							move(&state.player, LEFT);
 						break;
 					case SDLK_d:
-						move(&state.player, RIGHT);
+						if (!pause)
+							move(&state.player, RIGHT);
 						break;
 					case SDLK_l:
-						rotate(&state.player, RIGHT);
+						if (!pause)
+							rotate(&state.player, RIGHT);
 						break;
 					case SDLK_j:
-						rotate(&state.player, LEFT);
+						if (!pause)
+							rotate(&state.player, LEFT);
 						break;
 					case SDLK_p:
 						printf("Player Info:\n\tPosition: [%f,%f,%f]\n\tDirection: %u degrees\n", state.player.pos.x, state.player.pos.y, state.player.pos.z, state.player.angle);
 						print = 1;
 						break;
 					case SDLK_e:
-						shotgun_idx = 1;
+						if (!pause)
+							shotgun_idx = 1;
 						break;
 					case SDLK_t:
-						minimap = (minimap + 1) % 2;
+						if (!pause)
+							minimap = (minimap + 1) % 2;
 						break;
 				}
 				break;
@@ -183,18 +195,23 @@ int game_loop() {
 	}
 
 
-	wall test = {
-		{10, 10},
-		{10, -10},
-		10,
-		32
-	};
-	draw_wall(state.pixels, &state.player, &test);
+	if (!pause) {
+		wall test = {
+			{10, 10},
+			{10, -10},
+			10,
+			32
+		};
+		draw_wall(state.pixels, &state.player, &test);
 	
-	draw_shotgun(state.pixels, shotgun_idx);
-	if (shotgun_idx != 0 && dt > 150) {
-		shotgun_idx = (shotgun_idx + 1) % 7;
-		dt = 0;
+		draw_shotgun(state.pixels, shotgun_idx);
+		if (shotgun_idx != 0 && dt > 150) {
+			shotgun_idx = (shotgun_idx + 1) % 7;
+			dt = 0;
+		}
+	} else {
+		clear_screen(state.pixels);
+		pause_screen(state.pixels);
 	}
 	render_screen(state.texture, state.renderer, state.pixels);
 	return 0;
