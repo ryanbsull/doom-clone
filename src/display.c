@@ -69,12 +69,12 @@ int draw_point(uint32_t* pixels, player* p, vec3* pt) {
 	return 0;	
 }
 
-void clip_wall(float* clip_x, int* clip_y, float* clip_z, vec3* start) {
-	float d = start->z - *clip_z; if (d == 0) {d = 1;}
+void clip_wall(float* clip_x, int* clip_y, float* clip_z, float start_x, int start_y, float start_z) {
+	float d = start_z - *clip_z; if (d == 0) {d = 1;}
 	float s = *clip_z / d;
-	*clip_x += s*(start->x - *clip_x);
-	*clip_y += s*(start->y - *clip_y);
-	*clip_z += s*(start->z - *clip_z); if (*clip_z >= -0.0001) {*clip_z = -1;}
+	*clip_x += s*(start_x - *clip_x);
+	*clip_y += s*(start_y - *clip_y);
+	*clip_z += s*(start_z - *clip_z); if (*clip_z >= -0.0001) {*clip_z = -1;}
 }
 
 void draw_line(u32* pixels, int_vec2* start, int_vec2* end) {
@@ -148,7 +148,8 @@ void fill_wall_textured(u32* pixels,
 
 int draw_wall(u32* pixels, player* p, wall* w) {
 	int dx_s = w->start.x - p->pos.x, dx_e = w->end.x - p->pos.x,
-	dy_t = p->pos.y - w->height, dy_b = p->pos.y - 0, dz_s = w->start.y - p->pos.z, dz_e = w->end.y - p->pos.z;
+	dy_t = p->pos.y - w->height, dy_b = p->pos.y - 0,
+	dz_s = w->start.y - p->pos.z, dz_e = w->end.y - p->pos.z;
 	// add 90 degrees since we want to project onto the camera plane which is perpendicular to the player
 	float cs = cos((p->angle + 90) * M_PI / 180), sn = sin((p->angle + 90) * M_PI / 180);
 	float rot_xs, rot_xe, rot_zs, rot_ze;
@@ -161,30 +162,30 @@ int draw_wall(u32* pixels, player* p, wall* w) {
 	rot_ze = dz_e * cs - dx_e * sn;
 	if (rot_zs >= 0 && rot_ze >= 0)
 		return 1;
-	if (rot_zs >= 0) {
-		clip_wall(&rot_xs, &dy_t, &rot_zs, &(vec3){rot_xe, dy_t, rot_ze});
-		clip_wall(&rot_xs, &dy_b, &rot_zs, &(vec3){rot_xe, dy_b, rot_ze});
+	if (rot_zs >= 0.0001) {
+		clip_wall(&rot_xs, &dy_t, &rot_zs, rot_xs, dy_t, rot_zs);
+		clip_wall(&rot_xs, &dy_b, &rot_zs, rot_xs, dy_b, rot_zs);
 	}
-	if (rot_ze >= 0) {
-		clip_wall(&rot_xe, &dy_b, &rot_ze, &(vec3){rot_xs, dy_b, rot_zs});
-		clip_wall(&rot_xe, &dy_t, &rot_ze, &(vec3){rot_xs, dy_t, rot_zs});
+	if (rot_ze >= 0.0001) {
+		clip_wall(&rot_xe, &dy_b, &rot_ze, rot_xe, dy_b, rot_ze);
+		clip_wall(&rot_xe, &dy_t, &rot_ze, rot_xe, dy_t, rot_ze);
 	}
 
-	pt_s.x = SCREEN_WIDTH / 2 + (200 * rot_xs / rot_zs);
-	pt_s.y = SCREEN_HEIGHT / 2 + (200 * dy_t / rot_zs);
-	pt_e.x = SCREEN_WIDTH / 2 + (200 * rot_xe / rot_ze);
-	pt_e.y = SCREEN_HEIGHT / 2 + (200 * dy_t / rot_ze);
+	pt_s.x = (float)SCREEN_WIDTH / 2 + (200 * rot_xs / rot_zs);
+	pt_s.y = (float)SCREEN_HEIGHT / 2 + (200 * dy_t / rot_zs);
+	pt_e.x = (float)SCREEN_WIDTH / 2 + (200 * rot_xe / rot_ze);
+	pt_e.y = (float)SCREEN_HEIGHT / 2 + (200 * dy_t / rot_ze);
 
-	pb_s.x = SCREEN_WIDTH / 2 + (200 * rot_xs / rot_zs);
-	pb_s.y = SCREEN_HEIGHT / 2 + (200 * dy_b / rot_zs);
-	pb_e.x = SCREEN_WIDTH / 2 + (200 * rot_xe / rot_ze);
-	pb_e.y = SCREEN_HEIGHT / 2 + (200 * dy_b / rot_ze);
+	pb_s.x = (float)SCREEN_WIDTH / 2 + (200 * rot_xs / rot_zs);
+	pb_s.y = (float)SCREEN_HEIGHT / 2 + (200 * dy_b / rot_zs);
+	pb_e.x = (float)SCREEN_WIDTH / 2 + (200 * rot_xe / rot_ze);
+	pb_e.y = (float)SCREEN_HEIGHT / 2 + (200 * dy_b / rot_ze);
 
 	float dx = w->end.x - w->start.x, dy = w->end.y - w->start.y;
 
 	// fill_wall(pixels, &pt_s, &pt_e, &pb_s, &pb_e);
 	fill_wall_textured(pixels, &pt_s, &pt_e, &pb_s, &pb_e,
-		w->texture, sqrt(dx * dx + dy * dy) / 5.0);
+		w->texture, sqrt(dx * dx + dy * dy));
 	
 	return 0;
 }
