@@ -6,8 +6,8 @@
 #include <stdio.h>
 
 typedef struct {
-  vec2 start;
-  vec2 end;
+  int_vec2 start;
+  int_vec2 end;
   int height;
   int texture;
 } wall;
