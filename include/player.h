@@ -4,8 +4,8 @@
 #include "util.h"
 #include <math.h>
 
-#define MVMT_SPEED    8	// in squares per call to move()
-#define ANGULAR_SPEED 8		// in degrees per call to rotate()
+#define MVMT_SPEED    8		// in squares per call to move()
+#define ANGULAR_SPEED 5		// in degrees per call to rotate()
 
 typedef struct {
 	int_vec3 pos;
