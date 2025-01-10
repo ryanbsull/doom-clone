@@ -4,11 +4,11 @@
 #include "util.h"
 #include <math.h>
 
-#define MVMT_SPEED    4
-#define ANGULAR_SPEED 4
+#define MVMT_SPEED    8	// in squares per call to move()
+#define ANGULAR_SPEED 8		// in degrees per call to rotate()
 
 typedef struct {
-	vec3 pos;
+	int_vec3 pos;
 	int angle; // [0-360] degrees
 } player;
 

@@ -47,7 +47,7 @@ int draw_shotgun(uint32_t* pixels, int idx) {
 	return 0;
 }
 
-int draw_point(uint32_t* pixels, player* p, vec3* pt) {
+int draw_point(uint32_t* pixels, player* p, int_vec3* pt) {
 	int dx = pt->x - p->pos.x, dy = p->pos.y - pt->y, dz = pt->z - p->pos.z;
 	// add 90 degrees since we want to project onto the camera plane which is perpendicular to the player
 	float cs = cos((p->angle + 90) * M_PI / 180), sn = sin((p->angle + 90) * M_PI / 180);
@@ -69,12 +69,15 @@ int draw_point(uint32_t* pixels, player* p, vec3* pt) {
 	return 0;	
 }
 
-void clip_wall(float* clip_x, int* clip_y, float* clip_z, vec3* start) {
-	float d = start->z - *clip_z; if (d == 0) {d = 1;}
-	float s = *clip_z / d;
-	*clip_x += s*(start->x - *clip_x);
-	*clip_y += s*(start->y - *clip_y);
-	*clip_z += s*(start->z - *clip_z); if (*clip_z >= -0.0001) {*clip_z = -1;}
+float clip_wall(int* x0, int* y0, int* z0, int x1, int y1, int z1) {
+	float da = *z0;
+	float db = z1;
+	float d = da-db; if (d <= 0.0001) { d = 1;}
+	float s = *z0 / d;
+	*x0 = *x0 + s*(x1 - (*x0));
+	*y0 = *y0 + s*(y1 - (*y0));
+	*z0 = *z0 + s*(z1 - (*z0)); if (*z0 == 0) { *z0 = -1;}
+	return s;
 }
 
 void draw_line(u32* pixels, int_vec2* start, int_vec2* end) {
@@ -113,15 +116,37 @@ void fill_wall(u32* pixels, int_vec2* start_t, int_vec2* end_t, int_vec2* start_
 	}
 }
 
+int clip_diff(int end, int start, int clip) {
+	int diff = 0, screen_end = end, screen_start = start;
+	if (start < 0)
+		screen_start = 0;
+	if (screen_start >= clip)
+		screen_start = clip - 1;
+
+	if (end < 0)
+		screen_end = 0;
+	if (screen_end >= clip)
+		screen_end = clip - 1;
+
+	diff = screen_end - screen_start;
+
+	return diff;
+}
+
 void fill_wall_textured(u32* pixels,
 	int_vec2* start_t, int_vec2* end_t,
-	int_vec2* start_b, int_vec2* end_b, int tex_idx, float wall_len) {
+	int_vec2* start_b, int_vec2* end_b,
+	int tex_idx, float wall_len, float clip_factor) {
 	int dx = end_t->x - start_t->x, dy_t = end_t->y - start_t->y, dy_b = end_b->y - start_b->y;
-	float step_x = (TEXTURE_WIDTH * wall_len) / dx, step_y;
+	int screen_dx = clip_diff(end_t->x, start_t->x, SCREEN_WIDTH);
+	float step_x = (TEXTURE_WIDTH * wall_len * (1 - clip_factor)) / (screen_dx * 10), step_y;
 	int sign = (dx < 0) ? -1 : 1;
-	int tex_x_base, tex_y_base, tex_x, tex_y;
+	int tex_x_base, tex_y_base, tex_x, tex_y, tex_x_offset;
 	int x, y_b, y_t;
 	get_texture_idx(tex_idx, &tex_x_base, &tex_y_base);
+
+	if (clip_factor != 0)
+		tex_x_offset = clip_factor * TEXTURE_WIDTH;
 		
 	float slope_t = (float)dy_t / dx;
 	float slope_b = (float)dy_b / dx;
@@ -139,7 +164,7 @@ void fill_wall_textured(u32* pixels,
 		step_y = TEXTURE_HEIGHT / (float)(y_t - y_b);
 		for(int j = y_b; j < y_t; j++)
 			if (x >= 0 && x < SCREEN_WIDTH) {
-				tex_x = ((int)(i* step_x) % TEXTURE_WIDTH) + tex_x_base;
+				tex_x = ((int)(i* step_x + tex_x_offset) % TEXTURE_WIDTH) + tex_x_base;
 				tex_y = ((j - y_b) * step_y) + tex_y_base;
 				pixels[(j * SCREEN_WIDTH) + x] = ((uint32_t*)textures->pixels)[tex_y * TEX_FILE_WIDTH + tex_x];
 			}
@@ -147,27 +172,30 @@ void fill_wall_textured(u32* pixels,
 }
 
 int draw_wall(u32* pixels, player* p, wall* w) {
+	int dx_w = w->end.x - w->start.x, dy_w = w->end.y - w->start.y;
 	int dx_s = w->start.x - p->pos.x, dx_e = w->end.x - p->pos.x,
-	dy_t = p->pos.y - w->height, dy_b = p->pos.y - 0, dz_s = w->start.y - p->pos.z, dz_e = w->end.y - p->pos.z;
+	dy_t = p->pos.y - w->height, dy_b = p->pos.y - 0,
+	dz_s = w->start.y - p->pos.z, dz_e = w->end.y - p->pos.z;
 	// add 90 degrees since we want to project onto the camera plane which is perpendicular to the player
 	float cs = cos((p->angle + 90) * M_PI / 180), sn = sin((p->angle + 90) * M_PI / 180);
-	float rot_xs, rot_xe, rot_zs, rot_ze;
+	int rot_xs, rot_xe, rot_zs, rot_ze;
 	int_vec2 pt_s, pt_e;
 	int_vec2 pb_s, pb_e;
+	float clip_factor = 0;
 
 	rot_xs = dx_s * cs + dz_s * sn;
 	rot_xe = dx_e * cs + dz_e * sn;
 	rot_zs = dz_s * cs - dx_s * sn;
 	rot_ze = dz_e * cs - dx_e * sn;
-	if (rot_zs >= 0 && rot_ze >= 0)
+	if (rot_zs > -1  && rot_ze > -1)
 		return 1;
-	if (rot_zs >= 0) {
-		clip_wall(&rot_xs, &dy_t, &rot_zs, &(vec3){rot_xe, dy_t, rot_ze});
-		clip_wall(&rot_xs, &dy_b, &rot_zs, &(vec3){rot_xe, dy_b, rot_ze});
+	if (rot_zs > -1) {
+		clip_factor = clip_wall(&rot_xs, &dy_t, &rot_zs, rot_xe, dy_t, rot_ze);
+		clip_wall(&rot_xs, &dy_b, &rot_zs, rot_xe, dy_b, rot_ze);
 	}
-	if (rot_ze >= 0) {
-		clip_wall(&rot_xe, &dy_b, &rot_ze, &(vec3){rot_xs, dy_b, rot_zs});
-		clip_wall(&rot_xe, &dy_t, &rot_ze, &(vec3){rot_xs, dy_t, rot_zs});
+	if (rot_ze > -1) {
+		clip_factor = clip_wall(&rot_xe, &dy_b, &rot_ze, rot_xs, dy_b, rot_zs);
+		clip_wall(&rot_xe, &dy_t, &rot_ze, rot_xs, dy_t, rot_zs);
 	}
 
 	pt_s.x = SCREEN_WIDTH / 2 + (200 * rot_xs / rot_zs);
@@ -180,11 +208,8 @@ int draw_wall(u32* pixels, player* p, wall* w) {
 	pb_e.x = SCREEN_WIDTH / 2 + (200 * rot_xe / rot_ze);
 	pb_e.y = SCREEN_HEIGHT / 2 + (200 * dy_b / rot_ze);
 
-	float dx = w->end.x - w->start.x, dy = w->end.y - w->start.y;
-
-	// fill_wall(pixels, &pt_s, &pt_e, &pb_s, &pb_e);
 	fill_wall_textured(pixels, &pt_s, &pt_e, &pb_s, &pb_e,
-		w->texture, sqrt(dx * dx + dy * dy) / 5.0);
+		w->texture, sqrt(dx_w * dx_w + dy_w * dy_w), clip_factor);
 	
 	return 0;
 }
