@@ -196,6 +196,8 @@ int game_loop() {
 
 
 	if (!pause) {
+		draw_ceiling(state.pixels, current_map.sections[0].ceiling_tex);
+		draw_floor(state.pixels, current_map.sections[0].floor_tex);
 		for (int i = 0; i < current_map.sections[0].num_walls; i++)
 			draw_wall(state.pixels, &state.player,
 			          &current_map.sections[0].walls[i]);

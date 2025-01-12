@@ -1,15 +1,13 @@
 #include "../include/display.h"
-#include <stdint.h>
 
 SDL_Surface* textures;
 SDL_Surface* shotgun;
 SDL_Surface* pause_logo;
-uint8_t firing = 0;
 
-void display_textures(uint32_t* pixels) {
+void display_textures(u32* pixels) {
 	for (int i = 0; i < SCREEN_WIDTH; i++)
     for(int j = 0; j < SCREEN_HEIGHT;  j++)
-			pixels[j*SCREEN_WIDTH + i] = ((uint32_t*)textures->pixels)[j*SCREEN_WIDTH + i];
+			pixels[j*SCREEN_WIDTH + i] = ((u32*)textures->pixels)[j*SCREEN_WIDTH + i];
 }
 
 int init_textures() {
@@ -33,13 +31,13 @@ void get_shotgun_idx(int idx, int* tex_x, int* tex_y) {
 	*tex_y = idx * SHTGN_HEIGHT + idx;
 }
 
-int draw_shotgun(uint32_t* pixels, int idx) {
+int draw_shotgun(u32* pixels, int idx) {
 	int tex_x, tex_y;
-	uint32_t color;
+	u32 color;
 	get_shotgun_idx(idx, &tex_x, &tex_y);
 	for (int i = 0; i < SHTGN_WIDTH * 2; i++) {
 		for (int j = 0; j < SHTGN_HEIGHT * 2; j++) {
-			color = ((uint32_t*)shotgun->pixels)[(tex_y + (SHTGN_HEIGHT - (j / 2))) * SHTGN_FILE_WIDTH + (tex_x + (i / 2))];
+			color = ((u32*)shotgun->pixels)[(tex_y + (SHTGN_HEIGHT - (j / 2))) * SHTGN_FILE_WIDTH + (tex_x + (i / 2))];
 			if(color != 0xff0fffff && color != 0xffffff0f)
 				pixels[j * SCREEN_WIDTH + (i + (SCREEN_WIDTH - (2 * SHTGN_WIDTH + 190)) / 2)] = color;
 		}
@@ -47,7 +45,7 @@ int draw_shotgun(uint32_t* pixels, int idx) {
 	return 0;
 }
 
-int draw_point(uint32_t* pixels, player* p, int_vec3* pt) {
+int draw_point(u32* pixels, player* p, int_vec3* pt) {
 	int dx = pt->x - p->pos.x, dy = p->pos.y - pt->y, dz = pt->z - p->pos.z;
 	// add 90 degrees since we want to project onto the camera plane which is perpendicular to the player
 	float cs = cos((p->angle + 90) * M_PI / 180), sn = sin((p->angle + 90) * M_PI / 180);
@@ -165,7 +163,7 @@ void fill_wall_textured(u32* pixels,
 			if (x >= 0 && x < SCREEN_WIDTH) {
 				tex_x = ((int)(i* step_x + tex_x_offset) % TEXTURE_WIDTH) + tex_x_base;
 				tex_y = ((j - y_b) * step_y) + tex_y_base;
-				pixels[(j * SCREEN_WIDTH) + x] = ((uint32_t*)textures->pixels)[tex_y * TEX_FILE_WIDTH + tex_x];
+				pixels[(j * SCREEN_WIDTH) + x] = ((u32*)textures->pixels)[tex_y * TEX_FILE_WIDTH + tex_x];
 			}
 	}
 }
@@ -213,7 +211,7 @@ int draw_wall(u32* pixels, player* p, wall* w) {
 	return 0;
 }
 
-int pause_screen(uint32_t* pixels) {
+int pause_screen(u32* pixels) {
 	float step_x = (float)2 * PAUSE_LOGO_W / (SCREEN_WIDTH);
 	float step_y = (float)2 * PAUSE_LOGO_H / (SCREEN_HEIGHT);
 	int tex_x, tex_y;
@@ -221,13 +219,39 @@ int pause_screen(uint32_t* pixels) {
 		for (int y = SCREEN_HEIGHT / 4; y < 3 * SCREEN_HEIGHT / 4; y++) {
 			tex_x = (x - (SCREEN_WIDTH / 4)) * step_x;
 			tex_y = PAUSE_LOGO_H - ((y - (SCREEN_HEIGHT / 4)) * step_y) - 1;
-			pixels[y * SCREEN_WIDTH + x] = ((uint32_t*)pause_logo->pixels)[tex_y * PAUSE_LOGO_W + tex_x];
+			pixels[y * SCREEN_WIDTH + x] = ((u32*)pause_logo->pixels)[tex_y * PAUSE_LOGO_W + tex_x];
 		}
 	}
 	return 0;
 }
 
-int clear_screen(uint32_t* pixels) {
+void draw_ceiling(u32* pixels, int ceiling_tex) {
+	int tex_x, tex_y;
+	get_texture_idx(ceiling_tex, &tex_x, &tex_y);
+	for (int x = 0; x < SCREEN_WIDTH; x++) {
+		for (int y = SCREEN_HEIGHT / 2; y < SCREEN_HEIGHT; y++) {
+			pixels[y * SCREEN_WIDTH + x] =
+				((u32*)textures->pixels)[
+				(y % TEXTURE_HEIGHT + tex_y) * TEX_FILE_WIDTH +
+				(x % TEXTURE_WIDTH + tex_x)];
+		}
+	}
+}
+
+void draw_floor(u32* pixels, int floor_tex) {
+	int tex_x, tex_y;
+	get_texture_idx(floor_tex, &tex_x, &tex_y);
+	for (int x = 0; x < SCREEN_WIDTH; x++) {
+		for (int y = 0; y < SCREEN_HEIGHT / 2; y++) {
+			pixels[y * SCREEN_WIDTH + x] =
+				((u32*)textures->pixels)[
+				(y % TEXTURE_HEIGHT + tex_y) * TEX_FILE_WIDTH +
+				(x % TEXTURE_WIDTH + tex_x)];
+		}
+	}
+}
+
+int clear_screen(u32* pixels) {
 	for (int x = 0; x < SCREEN_WIDTH; x++)
 		for(int y = 0; y < SCREEN_HEIGHT; y++)
 			pixels[x*SCREEN_HEIGHT + y] = 0;
@@ -235,11 +259,11 @@ int clear_screen(uint32_t* pixels) {
 	return 0;
 }
 
-int render_screen(SDL_Texture* texture, SDL_Renderer* renderer, uint32_t* pixels) {
+int render_screen(SDL_Texture* texture, SDL_Renderer* renderer, u32* pixels) {
 	SDL_UpdateTexture(
 		texture,
 		NULL,
-		pixels, SCREEN_WIDTH * sizeof(uint32_t)
+		pixels, SCREEN_WIDTH * sizeof(u32)
 	);
 	SDL_RenderCopyEx(
 		renderer,
