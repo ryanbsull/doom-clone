@@ -15,7 +15,7 @@ void display_textures(uint32_t* pixels) {
 int init_textures() {
 	IMG_Init(IMG_INIT_PNG);
 
-	// textures.png is a 9 x 12 grid of 64 x 64 pixel textures separated by 5 pixel buffers
+	// environment.png is a 9 x 12 grid of 64 x 64 pixel textures separated by 5 pixel buffers
 	// with texture[8][11] being blank 
 	textures = IMG_Load("textures/environment.png");
 	shotgun = IMG_Load("textures/shotgun.png");
@@ -145,8 +145,7 @@ void fill_wall_textured(u32* pixels,
 	int x, y_b, y_t;
 	get_texture_idx(tex_idx, &tex_x_base, &tex_y_base);
 
-	if (clip_factor != 0)
-		tex_x_offset = clip_factor * TEXTURE_WIDTH;
+	tex_x_offset = clip_factor * TEXTURE_WIDTH;
 		
 	float slope_t = (float)dy_t / dx;
 	float slope_b = (float)dy_b / dx;

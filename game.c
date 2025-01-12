@@ -196,14 +196,10 @@ int game_loop() {
 
 
 	if (!pause) {
-		wall test = {
-			{10, 10},
-			{10, -10},
-			10,
-			32
-		};
-		draw_wall(state.pixels, &state.player, &test);
-	
+		for (int i = 0; i < current_map.sections[0].num_walls; i++)
+			draw_wall(state.pixels, &state.player,
+			          &current_map.sections[0].walls[i]);
+
 		draw_shotgun(state.pixels, shotgun_idx);
 		if (shotgun_idx != 0 && dt > 150) {
 			shotgun_idx = (shotgun_idx + 1) % 7;
