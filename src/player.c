@@ -11,7 +11,7 @@ void move(player* p, int dir) {
 }
 
 void rotate(player* p, int dir) {
-	p->angle += ANGULAR_SPEED * (dir / 2);
+	p->angle += ANGULAR_SPEED * (-dir / 2);
 	if (p->angle > 359)
 		p->angle -= 360;
 	if (p->angle < 0)

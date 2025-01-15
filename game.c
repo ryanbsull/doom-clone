@@ -1,3 +1,5 @@
+#include "SDL2/SDL_events.h"
+#include "SDL2/SDL_mouse.h"
 #include "SDL2/SDL_render.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
@@ -79,6 +81,7 @@ int init() {
 	state.player.angle = 0;
 
 	init_textures();
+	SDL_SetRelativeMouseMode(SDL_FALSE);
 	return 0;
 }
 
@@ -135,6 +138,7 @@ int show_minimap(u32* pixels, player* p, vec3* pt) {
 
 	return 0;
 }
+
 int game_loop() {
 	clear_screen(state.pixels);
 	static int shotgun_idx = 0, minimap = 0, time = 0, dt = 0, pause = 1;
@@ -152,6 +156,7 @@ int game_loop() {
 				switch (e.key.keysym.sym) {
 					case SDLK_ESCAPE:
 						pause = (pause + 1) % 2;
+						SDL_SetRelativeMouseMode(!pause);
 						break;
 					case SDLK_w:
 						if (!pause)
@@ -169,14 +174,6 @@ int game_loop() {
 						if (!pause)
 							move(&state.player, RIGHT);
 						break;
-					case SDLK_l:
-						if (!pause)
-							rotate(&state.player, RIGHT);
-						break;
-					case SDLK_j:
-						if (!pause)
-							rotate(&state.player, LEFT);
-						break;
 					case SDLK_p:
 						printf("Player Info:\n\tPosition: [%d,%d,%d]\n\tDirection: %u degrees\n", state.player.pos.x, state.player.pos.y, state.player.pos.z, state.player.angle);
 						print = 1;
@@ -190,6 +187,9 @@ int game_loop() {
 							minimap = (minimap + 1) % 2;
 						break;
 				}
+				break;
+			case SDL_MOUSEMOTION:
+				rotate(&state.player, e.motion.xrel);
 				break;
 		}
 	}
