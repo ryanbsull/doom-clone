@@ -179,6 +179,12 @@ int game_loop() {
           case SDLK_t:
             if (!pause) minimap = (minimap + 1) % 2;
             break;
+          case SDLK_z:
+            save_map("levels/one.lvl");
+            break;
+          case SDLK_r:
+            load_map("levels/one.lvl");
+            break;
         }
         break;
       case SDL_MOUSEMOTION:

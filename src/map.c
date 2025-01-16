@@ -3,51 +3,7 @@
 map_data current_map;
 
 int default_map() {
-  current_map.num_sections = 1;
-  current_map.sections =
-      (map_section*)malloc(sizeof(map_section) * current_map.num_sections);
-  current_map.sections[0].ceiling_tex = 43;
-  current_map.sections[0].floor_tex = 44;
-  current_map.sections[0].num_walls = 7;
-  current_map.sections[0].walls =
-      (wall*)malloc(sizeof(wall) * current_map.sections[0].num_walls);
-  // box that the player starts in
-  current_map.sections[0].walls[0].start.x = 0;
-  current_map.sections[0].walls[0].start.y = 0;
-  current_map.sections[0].walls[0].end.x = 150;
-  current_map.sections[0].walls[0].end.y = 0;
-  current_map.sections[0].walls[0].height = 10;
-  current_map.sections[0].walls[1].start.x = 150;
-  current_map.sections[0].walls[1].start.y = 0;
-  current_map.sections[0].walls[1].end.x = 150;
-  current_map.sections[0].walls[1].end.y = 150;
-  current_map.sections[0].walls[1].height = 10;
-  current_map.sections[0].walls[2].start.x = 150;
-  current_map.sections[0].walls[2].start.y = 150;
-  current_map.sections[0].walls[2].end.x = 0;
-  current_map.sections[0].walls[2].end.y = 150;
-  current_map.sections[0].walls[2].height = 110;
-  current_map.sections[0].walls[3].start.x = 0;
-  current_map.sections[0].walls[3].start.y = 150;
-  current_map.sections[0].walls[3].end.x = 0;
-  current_map.sections[0].walls[3].end.y = 0;
-  current_map.sections[0].walls[3].height = 10;
-  // triangle within the room
-  current_map.sections[0].walls[4].start.x = 2;
-  current_map.sections[0].walls[4].start.y = 2;
-  current_map.sections[0].walls[4].end.x = 1;
-  current_map.sections[0].walls[4].end.y = 3;
-  current_map.sections[0].walls[4].height = 10;
-  current_map.sections[0].walls[5].start.x = 1;
-  current_map.sections[0].walls[5].start.y = 3;
-  current_map.sections[0].walls[5].end.x = 3;
-  current_map.sections[0].walls[5].end.y = 3;
-  current_map.sections[0].walls[5].height = 10;
-  current_map.sections[0].walls[6].start.x = 3;
-  current_map.sections[0].walls[6].start.y = 3;
-  current_map.sections[0].walls[6].end.x = 2;
-  current_map.sections[0].walls[6].end.y = 2;
-  current_map.sections[0].walls[6].height = 10;
+  load_map("levels/one.lvl");
   return 0;
 }
 
@@ -58,19 +14,45 @@ int load_map(char* map_file) {
 
   file = fopen(map_file, "rb");
   if (file == NULL) goto err;
-  if (!fread(&map_size, sizeof(int), 1, file)) goto err;
-  current_map.num_sections = map_size;
+  if (!fread(&current_map.num_sections, sizeof(int), 1, file)) goto err;
   current_map.sections = (map_section*)malloc(map_size * sizeof(map_section));
-  if (!fread(&current_map.sections, sizeof(map_section), map_size, file))
-    goto cleanup_map;
+  for (int i = 0; i < current_map.num_sections; i++) {
+    fread(&current_map.sections[i].ceiling, sizeof(int), 1, file);
+    fread(&current_map.sections[i].ceiling_tex, sizeof(int), 1, file);
+    fread(&current_map.sections[i].floor, sizeof(int), 1, file);
+    fread(&current_map.sections[i].floor_tex, sizeof(int), 1, file);
+    fread(&current_map.sections[i].num_walls, sizeof(int), 1, file);
+    current_map.sections[i].walls =
+        (wall*)malloc(current_map.sections[i].num_walls * sizeof(wall));
+    fread(current_map.sections[i].walls, sizeof(wall),
+          current_map.sections[i].num_walls, file);
+  }
 
+  fclose(file);
   return 0;
 cleanup_map:
+  for (int i = 0; i < current_map.num_sections; i++)
+    free(current_map.sections[i].walls);
   free(current_map.sections);
 err:
   current_map.num_sections = 0;
+  fclose(file);
   return 1;
 }
 
 // save the current map to a file
-int save_map(char* map_file) { return 0; }
+int save_map(char* map_file) {
+  FILE* file;
+  file = fopen(map_file, "w+");
+  fwrite(&current_map.num_sections, sizeof(int), 1, file);
+  for (int i = 0; i < current_map.num_sections; i++) {
+    fwrite(&current_map.sections[i].ceiling, sizeof(int), 1, file);
+    fwrite(&current_map.sections[i].ceiling_tex, sizeof(int), 1, file);
+    fwrite(&current_map.sections[i].floor, sizeof(int), 1, file);
+    fwrite(&current_map.sections[i].floor_tex, sizeof(int), 1, file);
+    fwrite(&current_map.sections[i].num_walls, sizeof(int), 1, file);
+    fwrite(current_map.sections[i].walls, sizeof(wall),
+           current_map.sections[i].num_walls, file);
+  }
+  return 0;
+}
