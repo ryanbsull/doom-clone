@@ -136,7 +136,8 @@ int show_minimap(u32* pixels, player* p, vec3* pt) {
 
 int game_loop() {
   clear_screen(state.pixels);
-  static int shotgun_idx = 0, minimap = 0, time = 0, dt = 0, pause = 1;
+  static int shotgun_idx = 0, minimap = 0, time = 0, dt = 0, pause = 1,
+             level_edit = 0;
   int print = 0;
   int prev_time = time;
   time = SDL_GetTicks();
@@ -179,6 +180,9 @@ int game_loop() {
           case SDLK_t:
             if (!pause) minimap = (minimap + 1) % 2;
             break;
+          case SDLK_l:
+            if (pause) level_edit = (level_edit + 1) % 2;
+            break;
           case SDLK_z:
             save_map("levels/one.lvl");
             break;
@@ -205,8 +209,12 @@ int game_loop() {
       dt = 0;
     }
   } else {
-    clear_screen(state.pixels);
-    pause_screen(state.pixels);
+    if (level_edit)
+      draw_level_edit(state.pixels, &current_map, &state.player);
+    else {
+      clear_screen(state.pixels);
+      pause_screen(state.pixels);
+    }
   }
   render_screen(state.texture, state.renderer, state.pixels);
   return 0;

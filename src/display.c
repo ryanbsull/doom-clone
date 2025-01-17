@@ -269,6 +269,51 @@ void draw_floor(u32* pixels, int floor_tex) {
   }
 }
 
+void draw_grid(u32* pixels) {
+	for (int x = 0; x < SCREEN_WIDTH; x++) {
+		for (int y = 0; y < SCREEN_HEIGHT; y++) {
+			if (y % 20 == 0 || x % 20 == 0)
+				pixels[y * SCREEN_WIDTH + x] = 0x80808080;
+		}
+	}
+}
+
+void draw_wall_to_grid(u32* pixels, wall* w) {
+	int dx = w->end.x - w->start.x, dy = w->end.y - w->start.y;
+	float len = 20 * sqrt(dx * dx + dy * dy);
+	float slope = atan2(w->end.y - w->start.y, w->end.x - w->start.x);
+	int y_val, x_val;
+
+	for (int i = 0; i < (int)len + 1; i++) {
+		y_val = (w->start.y * 20 + i * sin(slope)) + (SCREEN_HEIGHT / 2);
+		x_val = (w->start.x * 20 + i * cos(slope)) + (SCREEN_WIDTH / 2);
+		if (y_val < SCREEN_HEIGHT && y_val >= 0 && x_val < SCREEN_WIDTH && x_val >= 0)
+			pixels[y_val * SCREEN_WIDTH + x_val] = 0x00FFFF00;
+	}
+}
+
+void draw_player_to_grid(u32* pixels, player* p) {
+	int x_val = 20 * p->pos.x + (SCREEN_WIDTH / 2), y_val = 20 * p->pos.z + (SCREEN_HEIGHT / 2);
+	for (int x = x_val - 5; x < x_val + 5; x++) {
+		for (int y = y_val - 5; y < y_val + 5; y++) {
+			if (y < SCREEN_HEIGHT && y >= 0 && x < SCREEN_WIDTH && x >= 0)
+				pixels[y * SCREEN_WIDTH + x] = 0x000000FF;
+		}
+	}
+}
+
+void draw_level_edit(u32* pixels, map_data* level, player* p) {
+	draw_grid(pixels);
+	int num_wall;
+	draw_player_to_grid(pixels, p);
+	for (int i = 0; i < level->num_sections; i++) {
+		num_wall = level->sections[i].num_walls;
+		for (int j = 0; j < num_wall; j++) {
+			draw_wall_to_grid(pixels, &level->sections[i].walls[j]);
+		}
+	}
+}
+
 int clear_screen(u32* pixels) {
   for (int x = 0; x < SCREEN_WIDTH; x++)
     for (int y = 0; y < SCREEN_HEIGHT; y++) pixels[x * SCREEN_HEIGHT + y] = 0;

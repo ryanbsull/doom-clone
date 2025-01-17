@@ -40,6 +40,7 @@ int draw_wall(uint32_t* pixels, player* p, wall* w);
 void draw_ceiling(u32* pixels, int ceiling_tex);
 void draw_floor(u32* pixels, int floor_tex);
 int clear_screen(uint32_t* pixels);
+void draw_level_edit(u32* pixels, map_data* level, player* p);
 int render_screen(SDL_Texture* texture, SDL_Renderer* renderer,
                   uint32_t* pixels);
 int pause_screen(uint32_t* pixels);
