@@ -138,7 +138,6 @@ void fill_wall_textured(u32* pixels,
 	int dx = end_t->x - start_t->x, dy_t = end_t->y - start_t->y, dy_b = end_b->y - start_b->y;
 	int screen_dx = clip_diff(end_t->x, start_t->x, SCREEN_WIDTH);
 	float step_x = (TEXTURE_WIDTH * wall_len * (1 - clip_factor)) / (screen_dx * 10), step_y;
-	int sign = (dx < 0) ? -1 : 1;
 	int tex_x_base, tex_y_base, tex_x, tex_y, tex_x_offset;
 	int x, y_b, y_t;
 	get_texture_idx(tex_idx, &tex_x_base, &tex_y_base);
@@ -161,7 +160,7 @@ void fill_wall_textured(u32* pixels,
 		step_y = TEXTURE_HEIGHT / (float)(y_t - y_b);
 		for(int j = y_b; j < y_t; j++)
 			if (x >= 0 && x < SCREEN_WIDTH) {
-				tex_x = ((int)(i* step_x + tex_x_offset) % TEXTURE_WIDTH) + tex_x_base;
+				tex_x = ((int)(i * step_x + tex_x_offset) % TEXTURE_WIDTH) + tex_x_base;
 				tex_y = ((j - y_b) * step_y) + tex_y_base;
 				pixels[(j * SCREEN_WIDTH) + x] = ((u32*)textures->pixels)[tex_y * TEX_FILE_WIDTH + tex_x];
 			}
@@ -206,6 +205,8 @@ int draw_wall(u32* pixels, player* p, wall* w) {
 	pb_e.y = SCREEN_HEIGHT / 2 + (200 * dy_b / rot_ze);
 
 	fill_wall_textured(pixels, &pt_s, &pt_e, &pb_s, &pb_e,
+		w->texture, sqrt(dx_w * dx_w + dy_w * dy_w), clip_factor);
+	fill_wall_textured(pixels, &pt_e, &pt_s, &pb_e, &pb_s,
 		w->texture, sqrt(dx_w * dx_w + dy_w * dy_w), clip_factor);
 	
 	return 0;
