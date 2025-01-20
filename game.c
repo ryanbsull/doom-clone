@@ -8,9 +8,9 @@
 #include "SDL2/SDL_mouse.h"
 #include "SDL2/SDL_render.h"
 #include "include/display.h"
+#include "include/editor.h"
 #include "include/map.h"
 #include "include/player.h"
-#include "include/util.h"
 
 struct {
   SDL_Window* win;
@@ -18,6 +18,7 @@ struct {
   SDL_Texture* texture;
   u32 pixels[SCREEN_WIDTH * SCREEN_HEIGHT];
   player player;
+  int_vec2 editor;
 } state;
 
 int init();
@@ -69,6 +70,10 @@ int init() {
   state.player.pos.y = 5;
   state.player.pos.z = 0;  // player will have a height of 1
   state.player.angle = 0;
+
+  // the center the editor at [0,0]
+  state.editor.x = 0;
+  state.editor.y = 0;
 
   init_textures();
   SDL_SetRelativeMouseMode(SDL_FALSE);
@@ -138,6 +143,7 @@ int game_loop() {
   clear_screen(state.pixels);
   static int shotgun_idx = 0, minimap = 0, time = 0, dt = 0, pause = 1,
              level_edit = 0;
+  static int_vec2 wall_s, wall_e;
   int print = 0;
   int prev_time = time;
   time = SDL_GetTicks();
@@ -152,19 +158,32 @@ int game_loop() {
         switch (e.key.keysym.sym) {
           case SDLK_ESCAPE:
             pause = (pause + 1) % 2;
+            if (!pause) level_edit = 0;
             SDL_SetRelativeMouseMode(!pause);
             break;
           case SDLK_w:
-            if (!pause) move(&state.player, FWD);
+            if (!pause)
+              move(&state.player, FWD);
+            else
+              move_editor(&state.editor, FWD);
             break;
           case SDLK_s:
-            if (!pause) move(&state.player, BACK);
+            if (!pause)
+              move(&state.player, BACK);
+            else
+              move_editor(&state.editor, BACK);
             break;
           case SDLK_a:
-            if (!pause) move(&state.player, LEFT);
+            if (!pause)
+              move(&state.player, LEFT);
+            else
+              move_editor(&state.editor, LEFT);
             break;
           case SDLK_d:
-            if (!pause) move(&state.player, RIGHT);
+            if (!pause)
+              move(&state.player, RIGHT);
+            else
+              move_editor(&state.editor, RIGHT);
             break;
           case SDLK_p:
             printf(
@@ -181,7 +200,7 @@ int game_loop() {
             if (!pause) minimap = (minimap + 1) % 2;
             break;
           case SDLK_l:
-            if (pause) level_edit = (level_edit + 1) % 2;
+            if (pause) level_edit = 1;
             break;
           case SDLK_z:
             save_map("levels/one.lvl");
@@ -192,7 +211,26 @@ int game_loop() {
         }
         break;
       case SDL_MOUSEMOTION:
-        rotate(&state.player, e.motion.xrel);
+        if (level_edit) {
+          translate_to_editor(e.button.x, e.button.y, &wall_e, &state.editor);
+        } else
+          rotate(&state.player, e.motion.xrel);
+        break;
+      case SDL_MOUSEBUTTONDOWN:
+        if (level_edit) {
+          translate_to_editor(e.button.x, e.button.y, &wall_s, &state.editor);
+        }
+        break;
+      case SDL_MOUSEBUTTONUP:
+        if (level_edit) {
+          translate_to_editor(e.button.x, e.button.y, &wall_e, &state.editor);
+          add_wall(&state.editor, &current_map, &wall_s, &wall_e);
+          // reset wall values
+          wall_s.x = -1;
+          wall_s.y = -1;
+          wall_e.x = -1;
+          wall_e.y = -1;
+        }
         break;
     }
   }
@@ -209,9 +247,9 @@ int game_loop() {
       dt = 0;
     }
   } else {
-    if (level_edit)
-      draw_level_edit(state.pixels, &current_map, &state.player);
-    else {
+    if (level_edit) {
+      draw_level_edit(state.pixels, &current_map, &state.player, &state.editor);
+    } else {
       clear_screen(state.pixels);
       pause_screen(state.pixels);
     }
