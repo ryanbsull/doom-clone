@@ -1,9 +1,10 @@
 #ifndef MAP_H
 #define MAP_H
 
-#include "util.h"
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
+
+#include "util.h"
 
 typedef struct {
   int_vec2 start;

@@ -4,11 +4,13 @@ map_data current_map;
 
 int default_map() {
   current_map.num_sections = 1;
-  current_map.sections = (map_section*) malloc(sizeof(map_section) * current_map.num_sections);
+  current_map.sections =
+      (map_section*)malloc(sizeof(map_section) * current_map.num_sections);
   current_map.sections[0].ceiling_tex = 43;
   current_map.sections[0].floor_tex = 44;
   current_map.sections[0].num_walls = 7;
-  current_map.sections[0].walls = (wall*) malloc(sizeof(wall) * current_map.sections[0].num_walls);
+  current_map.sections[0].walls =
+      (wall*)malloc(sizeof(wall) * current_map.sections[0].num_walls);
   // box that the player starts in
   current_map.sections[0].walls[0].start.x = 0;
   current_map.sections[0].walls[0].start.y = 0;
@@ -55,12 +57,10 @@ int load_map(char* map_file) {
   FILE* file;
 
   file = fopen(map_file, "rb");
-  if (file == NULL)
-    goto err;
-  if (!fread(&map_size, sizeof(int), 1, file))
-    goto err;
+  if (file == NULL) goto err;
+  if (!fread(&map_size, sizeof(int), 1, file)) goto err;
   current_map.num_sections = map_size;
-  current_map.sections = (map_section *)malloc(map_size * sizeof(map_section));
+  current_map.sections = (map_section*)malloc(map_size * sizeof(map_section));
   if (!fread(&current_map.sections, sizeof(map_section), map_size, file))
     goto cleanup_map;
 
@@ -73,6 +73,4 @@ err:
 }
 
 // save the current map to a file
-int save_map(char* map_file) {
-  return 0;
-}
+int save_map(char* map_file) { return 0; }
