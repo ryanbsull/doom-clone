@@ -143,7 +143,8 @@ int game_loop() {
   clear_screen(state.pixels);
   static int shotgun_idx = 0, minimap = 0, time = 0, dt = 0, pause = 1,
              level_edit = 0;
-  static int_vec2 wall_s, wall_e;
+  static int_vec2 wall_s = {MAX_MAP_VAL, MAX_MAP_VAL},
+                  wall_e = {MAX_MAP_VAL, MAX_MAP_VAL};
   int print = 0;
   int prev_time = time;
   time = SDL_GetTicks();
@@ -226,10 +227,10 @@ int game_loop() {
           translate_to_editor(e.button.x, e.button.y, &wall_e, &state.editor);
           add_wall(&current_map, &wall_s, &wall_e, 0);
           // reset wall values
-          wall_s.x = -1;
-          wall_s.y = -1;
-          wall_e.x = -1;
-          wall_e.y = -1;
+          wall_s.x = MAX_MAP_VAL;
+          wall_s.y = MAX_MAP_VAL;
+          wall_e.x = MAX_MAP_VAL;
+          wall_e.y = MAX_MAP_VAL;
         }
         break;
     }
@@ -249,6 +250,9 @@ int game_loop() {
   } else {
     if (level_edit) {
       draw_level_edit(state.pixels, &current_map, &state.player, &state.editor);
+      if (wall_s.x != MAX_MAP_VAL && wall_s.y != MAX_MAP_VAL &&
+          wall_e.x != MAX_MAP_VAL && wall_e.y != MAX_MAP_VAL)
+        draw_temp_wall(state.pixels, &wall_s, &wall_e, &state.editor);
     } else {
       clear_screen(state.pixels);
       pause_screen(state.pixels);

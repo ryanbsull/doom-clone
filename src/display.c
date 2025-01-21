@@ -292,6 +292,15 @@ void draw_wall_to_grid(u32* pixels, wall* w, int_vec2* editor) {
 	}
 }
 
+void draw_temp_wall(u32 *pixels, int_vec2 *s, int_vec2 *e, int_vec2 *editor) {
+	wall temp;
+	temp.start.x = s->x;
+	temp.start.y = s->y;
+	temp.end.x = e->x;
+	temp.end.y = e->y;
+	draw_wall_to_grid(pixels, &temp, editor);
+}
+
 void draw_player_to_grid(u32* pixels, player* p, int_vec2* editor) {
 	int x_val = 20 * (p->pos.x - editor->x) + (SCREEN_WIDTH / 2), y_val = 20 * (p->pos.z - editor->y) + (SCREEN_HEIGHT / 2);
 	for (int x = x_val - 5; x < x_val + 5; x++) {

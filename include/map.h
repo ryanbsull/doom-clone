@@ -4,6 +4,8 @@
 // simple workaround for testing TODO: make wall struct into dynamic
 // linked-list
 #define MAX_WALLS 64
+// arbitrary maximum value of a point on the map
+#define MAX_MAP_VAL 1024
 
 #include <stdio.h>
 #include <stdlib.h>
