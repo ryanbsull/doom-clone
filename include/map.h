@@ -1,6 +1,10 @@
 #ifndef MAP_H
 #define MAP_H
 
+// simple workaround for testing TODO: make wall struct into dynamic
+// linked-list
+#define MAX_WALLS 64
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -32,5 +36,6 @@ extern map_data current_map;
 int default_map();
 int load_map(char* map_file);
 int save_map(char* map_file);
+void add_wall(map_data* map, int_vec2* start, int_vec2* end, int section);
 
 #endif

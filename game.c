@@ -224,7 +224,7 @@ int game_loop() {
       case SDL_MOUSEBUTTONUP:
         if (level_edit) {
           translate_to_editor(e.button.x, e.button.y, &wall_e, &state.editor);
-          add_wall(&state.editor, &current_map, &wall_s, &wall_e);
+          add_wall(&current_map, &wall_s, &wall_e, 0);
           // reset wall values
           wall_s.x = -1;
           wall_s.y = -1;

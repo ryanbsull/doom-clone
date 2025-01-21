@@ -22,8 +22,7 @@ int load_map(char* map_file) {
     fread(&current_map.sections[i].floor, sizeof(int), 1, file);
     fread(&current_map.sections[i].floor_tex, sizeof(int), 1, file);
     fread(&current_map.sections[i].num_walls, sizeof(int), 1, file);
-    current_map.sections[i].walls =
-        (wall*)malloc(current_map.sections[i].num_walls * sizeof(wall));
+    current_map.sections[i].walls = (wall*)malloc(MAX_WALLS * sizeof(wall));
     fread(current_map.sections[i].walls, sizeof(wall),
           current_map.sections[i].num_walls, file);
   }
@@ -55,4 +54,20 @@ int save_map(char* map_file) {
            current_map.sections[i].num_walls, file);
   }
   return 0;
+}
+
+void add_wall(map_data* map, int_vec2* start, int_vec2* end, int section) {
+  if (section > map->num_sections) return;
+  if (map->sections[section].num_walls + 1 > MAX_WALLS) return;
+  int wall_num = ++map->sections[section].num_walls;
+  wall* w = &map->sections[section].walls[wall_num - 1];
+
+  w->start.x = start->x;
+  w->start.y = start->y;
+  w->end.x = end->x;
+  w->end.y = end->y;
+  w->height = 10;
+  w->texture = 30;
+
+  return;
 }
