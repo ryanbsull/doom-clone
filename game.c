@@ -239,8 +239,12 @@ int game_loop() {
   if (!pause) {
     draw_ceiling(state.pixels, current_map.sections[0].ceiling_tex);
     draw_floor(state.pixels, current_map.sections[0].floor_tex);
-    for (int i = 0; i < current_map.sections[0].num_walls; i++)
-      draw_wall(state.pixels, &state.player, &current_map.sections[0].walls[i]);
+    draw_wall(state.pixels, &state.player, current_map.sections[0].walls);
+    wall* tmp = current_map.sections[0].walls->next;
+    while (tmp != NULL) {
+      draw_wall(state.pixels, &state.player, tmp);
+      tmp = tmp->next;
+    }
 
     draw_shotgun(state.pixels, shotgun_idx);
     if (shotgun_idx != 0 && dt > 150) {

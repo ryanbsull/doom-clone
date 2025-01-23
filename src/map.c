@@ -22,9 +22,15 @@ int load_map(char* map_file) {
     fread(&current_map.sections[i].floor, sizeof(int), 1, file);
     fread(&current_map.sections[i].floor_tex, sizeof(int), 1, file);
     fread(&current_map.sections[i].num_walls, sizeof(int), 1, file);
-    current_map.sections[i].walls = (wall*)malloc(MAX_WALLS * sizeof(wall));
-    fread(current_map.sections[i].walls, sizeof(wall),
-          current_map.sections[i].num_walls, file);
+    current_map.sections[i].walls = (wall*)malloc(sizeof(wall));
+    fread(current_map.sections[i].walls, sizeof(wall), 1, file);
+    current_map.sections[i].walls->next = (wall*)malloc(sizeof(wall));
+    wall* tmp = current_map.sections[i].walls->next;
+    for (int j = 1; j < current_map.sections[i].num_walls; j++) {
+      fread(tmp, sizeof(wall), 1, file);
+      tmp->next = (wall*)malloc(sizeof(wall));
+      tmp = tmp->next;
+    }
   }
 
   fclose(file);
@@ -50,17 +56,24 @@ int save_map(char* map_file) {
     fwrite(&current_map.sections[i].floor, sizeof(int), 1, file);
     fwrite(&current_map.sections[i].floor_tex, sizeof(int), 1, file);
     fwrite(&current_map.sections[i].num_walls, sizeof(int), 1, file);
-    fwrite(current_map.sections[i].walls, sizeof(wall),
-           current_map.sections[i].num_walls, file);
+    fwrite(current_map.sections[i].walls, sizeof(wall), 1, file);
+    wall* tmp = current_map.sections[i].walls->next;
+    while (tmp != NULL) {
+      fwrite(tmp, sizeof(wall), 1, file);
+      tmp = tmp->next;
+    }
   }
   return 0;
 }
 
 void add_wall(map_data* map, int_vec2* start, int_vec2* end, int section) {
   if (section > map->num_sections) return;
-  if (map->sections[section].num_walls + 1 > MAX_WALLS) return;
   int wall_num = ++map->sections[section].num_walls;
-  wall* w = &map->sections[section].walls[wall_num - 1];
+  wall* w = map->sections[section].walls;
+  while (w->next != NULL) w = w->next;
+
+  w->next = (wall*)malloc(sizeof(wall));
+  w = w->next;
 
   w->start.x = start->x;
   w->start.y = start->y;

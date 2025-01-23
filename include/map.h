@@ -1,9 +1,6 @@
 #ifndef MAP_H
 #define MAP_H
 
-// simple workaround for testing TODO: make wall struct into dynamic
-// linked-list
-#define MAX_WALLS 64
 // arbitrary maximum value of a point on the map
 #define MAX_MAP_VAL 1024
 
@@ -12,11 +9,12 @@
 
 #include "util.h"
 
-typedef struct {
+typedef struct _wall {
   int_vec2 start;
   int_vec2 end;
   int height;
   int texture;
+  struct _wall* next;
 } wall;
 
 typedef struct {
