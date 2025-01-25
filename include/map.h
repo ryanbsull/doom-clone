@@ -37,5 +37,6 @@ int default_map();
 int load_map(char* map_file);
 int save_map(char* map_file);
 void add_wall(map_data* map, int_vec2* start, int_vec2* end, int section);
+void pop_wall(map_data* map, int section);
 
 #endif
