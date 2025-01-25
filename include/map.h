@@ -1,16 +1,20 @@
 #ifndef MAP_H
 #define MAP_H
 
+// arbitrary maximum value of a point on the map
+#define MAX_MAP_VAL 1024
+
 #include <stdio.h>
 #include <stdlib.h>
 
 #include "util.h"
 
-typedef struct {
+typedef struct _wall {
   int_vec2 start;
   int_vec2 end;
   int height;
   int texture;
+  struct _wall* next;
 } wall;
 
 typedef struct {
@@ -32,5 +36,7 @@ extern map_data current_map;
 int default_map();
 int load_map(char* map_file);
 int save_map(char* map_file);
+void add_wall(map_data* map, int_vec2* start, int_vec2* end, int section);
+void pop_wall(map_data* map, int section);
 
 #endif

@@ -269,6 +269,66 @@ void draw_floor(u32* pixels, int floor_tex) {
   }
 }
 
+void draw_grid(u32* pixels) {
+  for (int x = 0; x < SCREEN_WIDTH; x++) {
+    for (int y = 0; y < SCREEN_HEIGHT; y++) {
+      if (y % 20 == 0 || x % 20 == 0) pixels[y * SCREEN_WIDTH + x] = 0x80808080;
+    }
+  }
+}
+
+void draw_wall_to_grid(u32* pixels, wall* w, int_vec2* editor) {
+  int dx = w->end.x - w->start.x, dy = w->end.y - w->start.y;
+  float len = 20 * sqrt(dx * dx + dy * dy);
+  float slope = atan2(w->end.y - w->start.y, w->end.x - w->start.x);
+  int y_val, x_val;
+
+  for (int i = 0; i < (int)len + 1; i++) {
+    y_val =
+        ((w->start.y - editor->y) * 20 + i * sin(slope)) + (SCREEN_HEIGHT / 2);
+    x_val =
+        ((w->start.x - editor->x) * 20 + i * cos(slope)) + (SCREEN_WIDTH / 2);
+    if (y_val < SCREEN_HEIGHT && y_val >= 0 && x_val < SCREEN_WIDTH &&
+        x_val >= 0)
+      pixels[y_val * SCREEN_WIDTH + x_val] = 0x00FFFF00;
+  }
+}
+
+void draw_temp_wall(u32* pixels, int_vec2* s, int_vec2* e, int_vec2* editor) {
+  wall temp;
+  temp.start.x = s->x;
+  temp.start.y = s->y;
+  temp.end.x = e->x;
+  temp.end.y = e->y;
+  draw_wall_to_grid(pixels, &temp, editor);
+}
+
+void draw_player_to_grid(u32* pixels, player* p, int_vec2* editor) {
+  int x_val = 20 * (p->pos.x - editor->x) + (SCREEN_WIDTH / 2),
+      y_val = 20 * (p->pos.z - editor->y) + (SCREEN_HEIGHT / 2);
+  for (int x = x_val - 5; x < x_val + 5; x++) {
+    for (int y = y_val - 5; y < y_val + 5; y++) {
+      if (y < SCREEN_HEIGHT && y >= 0 && x < SCREEN_WIDTH && x >= 0)
+        pixels[y * SCREEN_WIDTH + x] = 0x000000FF;
+    }
+  }
+}
+
+void draw_level_edit(u32* pixels, map_data* level, player* p,
+                     int_vec2* editor) {
+  draw_grid(pixels);
+  int num_wall;
+  wall* w;
+  draw_player_to_grid(pixels, p, editor);
+  for (int i = 0; i < level->num_sections; i++) {
+    w = level->sections[i].walls;
+    while (w != NULL) {
+      draw_wall_to_grid(pixels, w, editor);
+      w = w->next;
+    }
+  }
+}
+
 int clear_screen(u32* pixels) {
   for (int x = 0; x < SCREEN_WIDTH; x++)
     for (int y = 0; y < SCREEN_HEIGHT; y++) pixels[x * SCREEN_HEIGHT + y] = 0;
