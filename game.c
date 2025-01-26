@@ -164,6 +164,7 @@ int game_loop() {
             break;
           case SDLK_q:
             if (level_edit) pop_wall(&current_map, 0);
+            break;
           case SDLK_w:
             if (!pause)
               move(&state.player, FWD);

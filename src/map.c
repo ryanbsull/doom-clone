@@ -85,7 +85,7 @@ void add_wall(map_data* map, int_vec2* start, int_vec2* end, int section) {
 
 void pop_wall(map_data* map, int section) {
   if (section > map->num_sections) return;
-  map->sections[section].num_walls++;
+  map->sections[section].num_walls--;
   wall* w = map->sections[section].walls;
   while (w->next != NULL && w->next->next != NULL) w = w->next;
   free(w->next);
