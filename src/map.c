@@ -46,9 +46,11 @@ err:
 }
 
 // save the current map to a file
-int save_map(char* map_file) {
+int save_map() {
   FILE* file;
-  file = fopen(map_file, "w+");
+  char lvl_name[MAX_LVL_NAME];
+  snprintf(lvl_name, MAX_LVL_NAME, "levels/%d.lvl", lvl_num);
+  file = fopen(lvl_name, "w+");
   fwrite(&current_map.num_sections, sizeof(int), 1, file);
   for (int i = 0; i < current_map.num_sections; i++) {
     fwrite(&current_map.sections[i].ceiling, sizeof(int), 1, file);
@@ -66,14 +68,26 @@ int save_map(char* map_file) {
   return 0;
 }
 
+void new_lvl() {
+  lvl_num++;
+  current_map.num_sections = 1;
+  free(current_map.sections);
+  current_map.sections = (map_section*)malloc(sizeof(map_section));
+}
+
 void add_wall(map_data* map, int_vec2* start, int_vec2* end, int section) {
   if (section > map->num_sections) return;
   map->sections[section].num_walls++;
   wall* w = map->sections[section].walls;
-  while (w->next != NULL) w = w->next;
+  while (w != NULL && w->next != NULL) w = w->next;
 
-  w->next = (wall*)malloc(sizeof(wall));
-  w = w->next;
+  if (w != NULL) {
+    w->next = (wall*)malloc(sizeof(wall));
+    w = w->next;
+  } else {
+    map->sections[section].walls = (wall*)malloc(sizeof(wall));
+    w = map->sections[section].walls;
+  }
 
   w->start.x = start->x;
   w->start.y = start->y;
