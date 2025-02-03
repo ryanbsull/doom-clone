@@ -107,10 +107,13 @@ void pop_wall(map_data* map, int section) {
 }
 
 // TODO: get intersect point using player pos + angle for more precise value
-double wall_dist(wall* w, int_vec3* pos) {
-  int dx = ((w->start.x + w->end.x) / 2) - pos->x;
-  int dz = ((w->start.y + w->end.y) / 2) - pos->z;
-  return sqrt(dx * dx + dz * dz);
+double wall_dist(wall* w, player* p) {
+  float dist =
+      -(((p->pos.x - w->start.x) * (w->start.y - w->end.y) -
+         (p->pos.y - w->start.y) * (w->start.x - w->end.x)) /
+        ((cos((float)p->angle * M_PI / 180)) * (w->start.y - w->end.y) -
+         (sin((float)p->angle * M_PI / 180)) * (w->start.x - w->end.x)));
+  return dist;
 }
 
 int get_len(wall* w) {
@@ -123,7 +126,7 @@ int get_len(wall* w) {
   return len;
 }
 
-void print_walls(wall* walls, int_vec3* p) {
+void print_walls(wall* walls, player* p) {
   int count = 0;
   wall* w = walls;
   while (w != NULL) {
@@ -135,7 +138,7 @@ void print_walls(wall* walls, int_vec3* p) {
 
 // simple bubble sort to test
 // TODO: implement quicker sorting algo
-wall* reorder_walls(wall* walls, int_vec3* p) {
+wall* reorder_walls(wall* walls, player* p) {
   int len = get_len(walls), itr = 0, swap;
   wall* w = walls;
 
@@ -147,7 +150,6 @@ wall* reorder_walls(wall* walls, int_vec3* p) {
     while (traverse->next != NULL) {
       wall* ptr = traverse->next;
       if (wall_dist(traverse, p) < wall_dist(ptr, p)) {
-        printf("SWAPPING\n");
         swap = 1;
         if (traverse == w) {
           traverse->next = ptr->next;

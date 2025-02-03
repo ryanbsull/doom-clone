@@ -11,6 +11,7 @@ static int lvl_num = 1;
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "player.h"
 #include "util.h"
 
 typedef struct _wall {
@@ -43,6 +44,6 @@ int save_map();
 void new_lvl();
 void add_wall(map_data* map, int_vec2* start, int_vec2* end, int section);
 void pop_wall(map_data* map, int section);
-wall* reorder_walls(wall* walls, int_vec3* p);
+wall* reorder_walls(wall* walls, player* p);
 
 #endif

@@ -246,7 +246,7 @@ int game_loop() {
     draw_ceiling(state.pixels, current_map.sections[0].ceiling_tex);
     draw_floor(state.pixels, current_map.sections[0].floor_tex);
     current_map.sections[0].walls =
-        reorder_walls(current_map.sections[0].walls, &state.player.pos);
+        reorder_walls(current_map.sections[0].walls, &state.player);
     wall* tmp = current_map.sections[0].walls;
     while (tmp != NULL) {
       draw_wall(state.pixels, &state.player, tmp);
