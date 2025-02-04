@@ -219,6 +219,7 @@ int draw_wall(u32* pixels, player* p, wall* w) {
   pb_s.y = SCREEN_HEIGHT / 2 + (200 * dy_b / rot_zs);
   pb_e.x = SCREEN_WIDTH / 2 + (200 * rot_xe / rot_ze);
   pb_e.y = SCREEN_HEIGHT / 2 + (200 * dy_b / rot_ze);
+  w->dist = (rot_ze + rot_zs) / 2;
 
   fill_wall_textured(pixels, &pt_s, &pt_e, &pb_s, &pb_e, w->texture,
                      sqrt(dx_w * dx_w + dy_w * dy_w), clip_factor);

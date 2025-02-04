@@ -3,7 +3,14 @@
 map_data current_map;
 
 int default_map() {
-  load_map("levels/one.lvl");
+  current_map.num_sections = 1;
+  current_map.sections = (map_section*)malloc(sizeof(map_section));
+  current_map.sections[0].ceiling = 20;
+  current_map.sections[0].ceiling_tex = 25;
+  current_map.sections[0].floor = 0;
+  current_map.sections[0].floor_tex = 30;
+  current_map.sections[0].num_walls = 0;
+  current_map.sections[0].walls = NULL;
   return 0;
 }
 
@@ -46,9 +53,11 @@ err:
 }
 
 // save the current map to a file
-int save_map(char* map_file) {
+int save_map() {
   FILE* file;
-  file = fopen(map_file, "w+");
+  char lvl_name[MAX_LVL_NAME];
+  snprintf(lvl_name, MAX_LVL_NAME, "levels/%d.lvl", lvl_num);
+  file = fopen(lvl_name, "w+");
   fwrite(&current_map.num_sections, sizeof(int), 1, file);
   for (int i = 0; i < current_map.num_sections; i++) {
     fwrite(&current_map.sections[i].ceiling, sizeof(int), 1, file);
@@ -66,21 +75,34 @@ int save_map(char* map_file) {
   return 0;
 }
 
+void new_lvl() {
+  lvl_num++;
+  current_map.num_sections = 1;
+  free(current_map.sections);
+  current_map.sections = (map_section*)malloc(sizeof(map_section));
+}
+
 void add_wall(map_data* map, int_vec2* start, int_vec2* end, int section) {
+  static int tex = 30;
   if (section > map->num_sections) return;
   map->sections[section].num_walls++;
   wall* w = map->sections[section].walls;
-  while (w->next != NULL) w = w->next;
+  while (w != NULL && w->next != NULL) w = w->next;
 
-  w->next = (wall*)malloc(sizeof(wall));
-  w = w->next;
+  if (w != NULL) {
+    w->next = (wall*)malloc(sizeof(wall));
+    w = w->next;
+  } else {
+    map->sections[section].walls = (wall*)malloc(sizeof(wall));
+    w = map->sections[section].walls;
+  }
 
   w->start.x = start->x;
   w->start.y = start->y;
   w->end.x = end->x;
   w->end.y = end->y;
   w->height = 10;
-  w->texture = 30;
+  w->texture = tex++;
 }
 
 void pop_wall(map_data* map, int section) {
@@ -90,4 +112,64 @@ void pop_wall(map_data* map, int section) {
   while (w->next != NULL && w->next->next != NULL) w = w->next;
   free(w->next);
   w->next = NULL;
+}
+
+int get_len(wall* w) {
+  int len = 0;
+  wall* tmp = w;
+  while (tmp != NULL) {
+    tmp = tmp->next;
+    len++;
+  }
+  return len;
+}
+
+void print_walls(wall* walls, player* p) {
+  int count = 0;
+  wall* w = walls;
+  while (w != NULL) {
+    printf("WALL %d: %d\n", count, w->dist);
+    w = w->next;
+    count++;
+  }
+}
+
+// simple bubble sort to test
+// TODO: implement quicker sorting algo
+wall* reorder_walls(wall* walls, player* p) {
+  int len = get_len(walls), itr = 0, swap;
+  wall* w = walls;
+
+  while (itr < len) {
+    wall* traverse = w;
+    wall* prev = w;
+    swap = 0;
+
+    while (traverse->next != NULL) {
+      wall* ptr = traverse->next;
+      if (traverse->dist > ptr->dist) {
+        swap = 1;
+        if (traverse == w) {
+          traverse->next = ptr->next;
+          ptr->next = traverse;
+          prev = ptr;
+          w = prev;
+        } else {
+          traverse->next = ptr->next;
+          ptr->next = traverse;
+          prev->next = ptr;
+          prev = ptr;
+        }
+        continue;
+      }
+      prev = traverse;
+      traverse = traverse->next;
+    }
+
+    if (!swap) break;
+
+    ++itr;
+  }
+
+  return w;
 }

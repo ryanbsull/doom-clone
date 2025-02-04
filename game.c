@@ -207,10 +207,13 @@ int game_loop() {
             if (pause) level_edit = 1;
             break;
           case SDLK_z:
-            save_map("levels/one.lvl");
+            save_map();
             break;
           case SDLK_r:
             load_map("levels/one.lvl");
+            break;
+          case SDLK_n:
+            if (level_edit) new_lvl();
             break;
         }
         break;
@@ -242,6 +245,8 @@ int game_loop() {
   if (!pause) {
     draw_ceiling(state.pixels, current_map.sections[0].ceiling_tex);
     draw_floor(state.pixels, current_map.sections[0].floor_tex);
+    current_map.sections[0].walls =
+        reorder_walls(current_map.sections[0].walls, &state.player);
     wall* tmp = current_map.sections[0].walls;
     while (tmp != NULL) {
       draw_wall(state.pixels, &state.player, tmp);
