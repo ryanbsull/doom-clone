@@ -19,6 +19,7 @@ typedef struct _wall {
   int_vec2 end;
   int height;
   int texture;
+  int dist;
   struct _wall* next;
 } wall;
 

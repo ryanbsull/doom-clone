@@ -3,7 +3,14 @@
 map_data current_map;
 
 int default_map() {
-  load_map("levels/one.lvl");
+  current_map.num_sections = 1;
+  current_map.sections = (map_section*)malloc(sizeof(map_section));
+  current_map.sections[0].ceiling = 20;
+  current_map.sections[0].ceiling_tex = 25;
+  current_map.sections[0].floor = 0;
+  current_map.sections[0].floor_tex = 30;
+  current_map.sections[0].num_walls = 0;
+  current_map.sections[0].walls = NULL;
   return 0;
 }
 
@@ -76,6 +83,7 @@ void new_lvl() {
 }
 
 void add_wall(map_data* map, int_vec2* start, int_vec2* end, int section) {
+  static int tex = 30;
   if (section > map->num_sections) return;
   map->sections[section].num_walls++;
   wall* w = map->sections[section].walls;
@@ -94,7 +102,7 @@ void add_wall(map_data* map, int_vec2* start, int_vec2* end, int section) {
   w->end.x = end->x;
   w->end.y = end->y;
   w->height = 10;
-  w->texture = 30;
+  w->texture = tex++;
 }
 
 void pop_wall(map_data* map, int section) {
@@ -104,16 +112,6 @@ void pop_wall(map_data* map, int section) {
   while (w->next != NULL && w->next->next != NULL) w = w->next;
   free(w->next);
   w->next = NULL;
-}
-
-// TODO: get intersect point using player pos + angle for more precise value
-double wall_dist(wall* w, player* p) {
-  float dist =
-      -(((p->pos.x - w->start.x) * (w->start.y - w->end.y) -
-         (p->pos.y - w->start.y) * (w->start.x - w->end.x)) /
-        ((cos((float)p->angle * M_PI / 180)) * (w->start.y - w->end.y) -
-         (sin((float)p->angle * M_PI / 180)) * (w->start.x - w->end.x)));
-  return dist;
 }
 
 int get_len(wall* w) {
@@ -130,7 +128,7 @@ void print_walls(wall* walls, player* p) {
   int count = 0;
   wall* w = walls;
   while (w != NULL) {
-    printf("WALL %d: %f\n", count, wall_dist(w, p));
+    printf("WALL %d: %d\n", count, w->dist);
     w = w->next;
     count++;
   }
@@ -149,7 +147,7 @@ wall* reorder_walls(wall* walls, player* p) {
 
     while (traverse->next != NULL) {
       wall* ptr = traverse->next;
-      if (wall_dist(traverse, p) < wall_dist(ptr, p)) {
+      if (traverse->dist > ptr->dist) {
         swap = 1;
         if (traverse == w) {
           traverse->next = ptr->next;
