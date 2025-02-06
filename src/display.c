@@ -74,7 +74,7 @@ int draw_point(u32* pixels, player* p, int_vec3* pt) {
   return 0;
 }
 
-float clip_wall(int* x0, int* y0, int* z0, int x1, int y1, int z1) {
+void clip_wall(int* x0, int* y0, int* z0, int x1, int y1, int z1) {
   float da = *z0;
   float db = z1;
   float d = da - db;
@@ -88,7 +88,6 @@ float clip_wall(int* x0, int* y0, int* z0, int x1, int y1, int z1) {
   if (*z0 == 0) {
     *z0 = -1;
   }
-  return s;
 }
 
 void draw_line(u32* pixels, int_vec2* start, int_vec2* end) {
@@ -140,23 +139,21 @@ int clip_diff(int end, int start, int clip) {
 
   diff = screen_end - screen_start;
 
-  return diff;
+  return abs(diff);
 }
 
 void fill_wall_textured(u32* pixels, int_vec2* start_t, int_vec2* end_t,
                         int_vec2* start_b, int_vec2* end_b, int tex_idx,
-                        float wall_len, float clip_factor) {
+                        float wall_len) {
   int dx = end_t->x - start_t->x, dy_t = end_t->y - start_t->y,
       dy_b = end_b->y - start_b->y;
   int screen_dx = clip_diff(end_t->x, start_t->x, SCREEN_WIDTH);
-  float step_x =
-            (TEXTURE_WIDTH * wall_len * (1 - clip_factor)) / (screen_dx * 10),
-        step_y;
-  int tex_x_base, tex_y_base, tex_x, tex_y, tex_x_offset;
+  float step_x = (float)TEXTURE_WIDTH / (float)screen_dx, step_y;
+  int tex_x_base, tex_y_base, tex_x, tex_y, tex_x_offset = 0;
   int x, y_b, y_t;
   get_texture_idx(tex_idx, &tex_x_base, &tex_y_base);
 
-  tex_x_offset = clip_factor * TEXTURE_WIDTH;
+  if (start_b->x < 0) tex_x_offset += step_x * start_t->x;
 
   float slope_t = (float)dy_t / dx;
   float slope_b = (float)dy_b / dx;
@@ -194,19 +191,18 @@ int draw_wall(u32* pixels, player* p, wall* w) {
   int rot_xs, rot_xe, rot_zs, rot_ze;
   int_vec2 pt_s, pt_e;
   int_vec2 pb_s, pb_e;
-  float clip_factor = 0;
 
   rot_xs = dx_s * cs + dz_s * sn;
   rot_xe = dx_e * cs + dz_e * sn;
   rot_zs = dz_s * cs - dx_s * sn;
   rot_ze = dz_e * cs - dx_e * sn;
-  if (rot_zs > -1 && rot_ze > -1) return 1;
-  if (rot_zs > -1) {
-    clip_factor = clip_wall(&rot_xs, &dy_t, &rot_zs, rot_xe, dy_t, rot_ze);
+  if (rot_zs >= 0 && rot_ze >= 0) return 1;
+  if (rot_zs >= 0) {
+    clip_wall(&rot_xs, &dy_t, &rot_zs, rot_xe, dy_t, rot_ze);
     clip_wall(&rot_xs, &dy_b, &rot_zs, rot_xe, dy_b, rot_ze);
   }
-  if (rot_ze > -1) {
-    clip_factor = clip_wall(&rot_xe, &dy_b, &rot_ze, rot_xs, dy_b, rot_zs);
+  if (rot_ze >= 0) {
+    clip_wall(&rot_xe, &dy_b, &rot_ze, rot_xs, dy_b, rot_zs);
     clip_wall(&rot_xe, &dy_t, &rot_ze, rot_xs, dy_t, rot_zs);
   }
 
@@ -222,9 +218,9 @@ int draw_wall(u32* pixels, player* p, wall* w) {
   w->dist = (rot_ze + rot_zs) / 2;
 
   fill_wall_textured(pixels, &pt_s, &pt_e, &pb_s, &pb_e, w->texture,
-                     sqrt(dx_w * dx_w + dy_w * dy_w), clip_factor);
+                     sqrt(dx_w * dx_w + dy_w * dy_w));
   fill_wall_textured(pixels, &pt_e, &pt_s, &pb_e, &pb_s, w->texture,
-                     sqrt(dx_w * dx_w + dy_w * dy_w), clip_factor);
+                     sqrt(dx_w * dx_w + dy_w * dy_w));
 
   return 0;
 }
