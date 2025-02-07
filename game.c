@@ -67,7 +67,7 @@ int init() {
 
   default_map();  // initialize default map
   state.player.pos.x = 0;
-  state.player.pos.y = 5;
+  state.player.pos.y = P_HEIGHT;
   state.player.pos.z = 0;  // player will have a height of 1
   state.player.angle = 0;
 
@@ -161,6 +161,9 @@ int game_loop() {
             pause = (pause + 1) % 2;
             if (!pause) level_edit = 0;
             SDL_SetRelativeMouseMode(!pause);
+            break;
+          case SDLK_SPACE:
+            if (!pause) jump(&state.player);
             break;
           case SDLK_q:
             if (level_edit) pop_wall(&current_map, 0);
@@ -256,6 +259,11 @@ int game_loop() {
     draw_shotgun(state.pixels, shotgun_idx);
     if (shotgun_idx != 0 && dt > 150) {
       shotgun_idx = (shotgun_idx + 1) % 7;
+      dt = 0;
+    }
+
+    if (state.player.pos.y != P_HEIGHT && dt > 150) {
+      state.player.pos.y--;
       dt = 0;
     }
   } else {

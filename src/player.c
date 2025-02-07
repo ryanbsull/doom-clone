@@ -17,3 +17,5 @@ void rotate(player* p, int dir) {
   if (p->angle > 359) p->angle -= 360;
   if (p->angle < 0) p->angle += 360;
 }
+
+void jump(player* p) { p->pos.y += JUMP_HEIGHT; }
