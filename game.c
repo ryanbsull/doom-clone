@@ -69,6 +69,7 @@ int init() {
   state.player.pos.x = 0;
   state.player.pos.y = P_HEIGHT;
   state.player.pos.z = 0;  // player will have a height of 1
+  state.player.jump_vel = 0;
   state.player.angle = 0;
 
   // the center the editor at [0,0]
@@ -163,7 +164,9 @@ int game_loop() {
             SDL_SetRelativeMouseMode(!pause);
             break;
           case SDLK_SPACE:
-            if (!pause) jump(&state.player);
+            if (!pause &&
+                state.player.pos.y - P_HEIGHT == current_map.sections[0].floor)
+              jump(&state.player);
             break;
           case SDLK_q:
             if (level_edit) pop_wall(&current_map, 0);
@@ -257,13 +260,21 @@ int game_loop() {
     }
 
     draw_shotgun(state.pixels, shotgun_idx);
-    if (shotgun_idx != 0 && dt > 150) {
-      shotgun_idx = (shotgun_idx + 1) % 7;
-      dt = 0;
-    }
+    if (dt > 150) {
+      if (shotgun_idx != 0) {
+        shotgun_idx = (shotgun_idx + 1) % 7;
+      }
+      if (state.player.pos.y - P_HEIGHT >= 0) {
+        if (state.player.jump_vel > -15)
+          state.player.jump_vel -= (((float)dt) / 1000) * 15;
 
-    if (state.player.pos.y != P_HEIGHT && dt > 150) {
-      state.player.pos.y--;
+        state.player.pos.y += state.player.jump_vel;
+        if (state.player.pos.y - P_HEIGHT < 0) {
+          state.player.pos.y = P_HEIGHT;
+          state.player.jump_vel = 0;
+        }
+      }
+
       dt = 0;
     }
   } else {

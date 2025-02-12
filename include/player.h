@@ -13,6 +13,7 @@
 typedef struct {
   int_vec3 pos;
   int angle;  // [0-360] degrees
+  float jump_vel;
 } player;
 
 extern int map[];

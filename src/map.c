@@ -5,7 +5,7 @@ map_data current_map;
 int default_map() {
   current_map.num_sections = 1;
   current_map.sections = (map_section*)malloc(sizeof(map_section));
-  current_map.sections[0].ceiling = 20;
+  current_map.sections[0].ceiling = 10;
   current_map.sections[0].ceiling_tex = 25;
   current_map.sections[0].floor = 0;
   current_map.sections[0].floor_tex = 30;
