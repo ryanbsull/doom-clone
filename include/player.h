@@ -7,7 +7,7 @@
 
 #define MVMT_SPEED 8       // in squares per call to move()
 #define ANGULAR_SPEED 0.5  // in degrees per call to rotate()
-#define JUMP_HEIGHT 10     // in squares per call to jump()
+#define JUMP_HEIGHT 5      // in squares per call to jump()
 #define P_HEIGHT 5         // height of the player
 
 typedef struct {

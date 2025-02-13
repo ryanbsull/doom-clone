@@ -5,6 +5,7 @@
 #include <stdio.h>
 
 #include "SDL2/SDL_events.h"
+#include "SDL2/SDL_keyboard.h"
 #include "SDL2/SDL_mouse.h"
 #include "SDL2/SDL_render.h"
 #include "include/display.h"
@@ -19,6 +20,7 @@ struct {
   u32 pixels[SCREEN_WIDTH * SCREEN_HEIGHT];
   player player;
   int_vec2 editor;
+  const unsigned char* keys;
 } state;
 
 int init();
@@ -76,6 +78,7 @@ int init() {
   state.editor.x = 0;
   state.editor.y = 0;
 
+  state.keys = SDL_GetKeyboardState(NULL);
   init_textures();
   SDL_SetRelativeMouseMode(SDL_FALSE);
   return 0;
@@ -149,6 +152,7 @@ int game_loop() {
   int print = 0;
   int prev_time = time;
   time = SDL_GetTicks();
+  int elapsed = time - prev_time;
   dt += time - prev_time;
   SDL_Event e;
 
@@ -259,14 +263,14 @@ int game_loop() {
       tmp = tmp->next;
     }
 
-    draw_shotgun(state.pixels, shotgun_idx);
-    if (dt > 150) {
+    draw_shotgun(state.pixels, shotgun_idx / 10);
+    if (dt > 20) {
       if (shotgun_idx != 0) {
-        shotgun_idx = (shotgun_idx + 1) % 7;
+        shotgun_idx = (shotgun_idx + 3) % 70;
       }
       if (state.player.pos.y - P_HEIGHT >= 0) {
         if (state.player.jump_vel > -15)
-          state.player.jump_vel -= (((float)dt) / 1000) * 15;
+          state.player.jump_vel -= (((float)dt) / 1000) * 10;
 
         state.player.pos.y += state.player.jump_vel;
         if (state.player.pos.y - P_HEIGHT < 0) {
