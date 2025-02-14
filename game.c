@@ -29,7 +29,7 @@ int init();
 int game_loop();
 int cleanup();
 int handle_keys(int* pause, int* level_edit, int* shotgun_idx, int* minimap,
-                int* print);
+                int* print, int dt);
 
 int main() {
   printf("DOOM\n");
@@ -75,7 +75,9 @@ int init() {
   state.player.pos.x = 0;
   state.player.pos.y = P_HEIGHT;
   state.player.pos.z = 0;  // player will have a height of 1
-  state.player.jump_vel = 0;
+  state.player.vel.x = 0;
+  state.player.vel.y = 0;
+  state.player.vel.z = 0;
   state.player.angle = 0;
 
   // the center the editor at [0,0]
@@ -188,7 +190,7 @@ int game_loop() {
         break;
     }
   }
-  handle_keys(&pause, &level_edit, &shotgun_idx, &minimap, &print);
+  handle_keys(&pause, &level_edit, &shotgun_idx, &minimap, &print, dt);
 
   if (!pause) {
     draw_ceiling(state.pixels, current_map.sections[0].ceiling_tex);
@@ -207,15 +209,10 @@ int game_loop() {
         shotgun_idx = (shotgun_idx + 3) % 70;
       }
       if (state.player.pos.y - P_HEIGHT >= 0) {
-        if (state.player.jump_vel > -15)
-          state.player.jump_vel -= (((float)dt) / 1000) * 10;
-
-        state.player.pos.y += state.player.jump_vel;
-        if (state.player.pos.y - P_HEIGHT < 0) {
-          state.player.pos.y = P_HEIGHT;
-          state.player.jump_vel = 0;
-        }
+        if (state.player.vel.y > -15)
+          state.player.vel.y -= (((float)dt) / 1000) * 10;
       }
+      update_player(&state.player);
 
       dt = 0;
     }
@@ -243,13 +240,15 @@ int cleanup() {
 }
 
 int handle_keys(int* pause, int* level_edit, int* shotgun_idx, int* minimap,
-                int* print) {
+                int* print, int dt) {
+  static int num_esc = 0;
   state.keys = SDL_GetKeyboardState(NULL);
-
-  if (state.keys[SDL_SCANCODE_ESCAPE]) {
-    *pause = (*pause + 1) % 2;
+  num_esc += state.keys[SDL_SCANCODE_ESCAPE];
+  if (num_esc > 3) {
+    *pause = !*pause;
     if (!*pause) *level_edit = 0;
     SDL_SetRelativeMouseMode(!*pause);
+    num_esc = 0;
   }
   if (state.keys[SDL_SCANCODE_SPACE]) {
     if (!*pause &&
