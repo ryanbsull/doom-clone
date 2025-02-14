@@ -8,6 +8,7 @@
 #include "SDL2/SDL_keyboard.h"
 #include "SDL2/SDL_mouse.h"
 #include "SDL2/SDL_render.h"
+#include "SDL2/SDL_scancode.h"
 #include "include/display.h"
 #include "include/editor.h"
 #include "include/map.h"
@@ -21,11 +22,14 @@ struct {
   player player;
   int_vec2 editor;
   const unsigned char* keys;
+  int key_size;
 } state;
 
 int init();
 int game_loop();
 int cleanup();
+int handle_keys(int* pause, int* level_edit, int* shotgun_idx, int* minimap,
+                int* print, int dt);
 
 int main() {
   printf("DOOM\n");
@@ -71,14 +75,16 @@ int init() {
   state.player.pos.x = 0;
   state.player.pos.y = P_HEIGHT;
   state.player.pos.z = 0;  // player will have a height of 1
-  state.player.jump_vel = 0;
+  state.player.vel.x = 0;
+  state.player.vel.y = 0;
+  state.player.vel.z = 0;
   state.player.angle = 0;
 
   // the center the editor at [0,0]
   state.editor.x = 0;
   state.editor.y = 0;
 
-  state.keys = SDL_GetKeyboardState(NULL);
+  state.keys = SDL_GetKeyboardState(&state.key_size);
   init_textures();
   SDL_SetRelativeMouseMode(SDL_FALSE);
   return 0;
@@ -160,73 +166,6 @@ int game_loop() {
     switch (e.type) {
       case SDL_QUIT:
         return 1;
-      case SDL_KEYDOWN:
-        switch (e.key.keysym.sym) {
-          case SDLK_ESCAPE:
-            pause = (pause + 1) % 2;
-            if (!pause) level_edit = 0;
-            SDL_SetRelativeMouseMode(!pause);
-            break;
-          case SDLK_SPACE:
-            if (!pause &&
-                state.player.pos.y - P_HEIGHT == current_map.sections[0].floor)
-              jump(&state.player);
-            break;
-          case SDLK_q:
-            if (level_edit) pop_wall(&current_map, 0);
-            break;
-          case SDLK_w:
-            if (!pause)
-              move(&state.player, FWD);
-            else
-              move_editor(&state.editor, FWD);
-            break;
-          case SDLK_s:
-            if (!pause)
-              move(&state.player, BACK);
-            else
-              move_editor(&state.editor, BACK);
-            break;
-          case SDLK_a:
-            if (!pause)
-              move(&state.player, LEFT);
-            else
-              move_editor(&state.editor, LEFT);
-            break;
-          case SDLK_d:
-            if (!pause)
-              move(&state.player, RIGHT);
-            else
-              move_editor(&state.editor, RIGHT);
-            break;
-          case SDLK_p:
-            printf(
-                "Player Info:\n\tPosition: [%d,%d,%d]\n\tDirection: %u "
-                "degrees\n",
-                state.player.pos.x, state.player.pos.y, state.player.pos.z,
-                state.player.angle);
-            print = 1;
-            break;
-          case SDLK_e:
-            if (!pause) shotgun_idx = 1;
-            break;
-          case SDLK_t:
-            if (!pause) minimap = (minimap + 1) % 2;
-            break;
-          case SDLK_l:
-            if (pause) level_edit = 1;
-            break;
-          case SDLK_z:
-            save_map();
-            break;
-          case SDLK_r:
-            load_map("levels/one.lvl");
-            break;
-          case SDLK_n:
-            if (level_edit) new_lvl();
-            break;
-        }
-        break;
       case SDL_MOUSEMOTION:
         if (level_edit) {
           translate_to_editor(e.button.x, e.button.y, &wall_e, &state.editor);
@@ -251,6 +190,7 @@ int game_loop() {
         break;
     }
   }
+  handle_keys(&pause, &level_edit, &shotgun_idx, &minimap, &print, dt);
 
   if (!pause) {
     draw_ceiling(state.pixels, current_map.sections[0].ceiling_tex);
@@ -269,15 +209,10 @@ int game_loop() {
         shotgun_idx = (shotgun_idx + 3) % 70;
       }
       if (state.player.pos.y - P_HEIGHT >= 0) {
-        if (state.player.jump_vel > -15)
-          state.player.jump_vel -= (((float)dt) / 1000) * 10;
-
-        state.player.pos.y += state.player.jump_vel;
-        if (state.player.pos.y - P_HEIGHT < 0) {
-          state.player.pos.y = P_HEIGHT;
-          state.player.jump_vel = 0;
-        }
+        if (state.player.vel.y > -15)
+          state.player.vel.y -= (((float)dt) / 1000) * 10;
       }
+      update_player(&state.player);
 
       dt = 0;
     }
@@ -301,5 +236,77 @@ int cleanup() {
   SDL_DestroyRenderer(state.renderer);
   SDL_DestroyWindow(state.win);
   SDL_Quit();
+  return 0;
+}
+
+int handle_keys(int* pause, int* level_edit, int* shotgun_idx, int* minimap,
+                int* print, int dt) {
+  static int num_esc = 0;
+  state.keys = SDL_GetKeyboardState(NULL);
+  num_esc += state.keys[SDL_SCANCODE_ESCAPE];
+  if (num_esc > 3) {
+    *pause = !*pause;
+    if (!*pause) *level_edit = 0;
+    SDL_SetRelativeMouseMode(!*pause);
+    num_esc = 0;
+  }
+  if (state.keys[SDL_SCANCODE_SPACE]) {
+    if (!*pause &&
+        state.player.pos.y - P_HEIGHT == current_map.sections[0].floor)
+      jump(&state.player);
+  }
+  if (state.keys[SDL_SCANCODE_Q]) {
+    if (*level_edit) pop_wall(&current_map, 0);
+  }
+  if (state.keys[SDL_SCANCODE_W]) {
+    if (!*pause)
+      move(&state.player, FWD);
+    else
+      move_editor(&state.editor, FWD);
+  }
+  if (state.keys[SDL_SCANCODE_S]) {
+    if (!*pause)
+      move(&state.player, BACK);
+    else
+      move_editor(&state.editor, BACK);
+  }
+  if (state.keys[SDL_SCANCODE_A]) {
+    if (!*pause)
+      move(&state.player, LEFT);
+    else
+      move_editor(&state.editor, LEFT);
+  }
+  if (state.keys[SDL_SCANCODE_D]) {
+    if (!*pause)
+      move(&state.player, RIGHT);
+    else
+      move_editor(&state.editor, RIGHT);
+  }
+  if (state.keys[SDL_SCANCODE_P]) {
+    printf(
+        "Player Info:\n\tPosition: [%d,%d,%d]\n\tDirection: %u "
+        "degrees\n",
+        state.player.pos.x, state.player.pos.y, state.player.pos.z,
+        state.player.angle);
+    *print = 1;
+  }
+  if (state.keys[SDL_SCANCODE_E]) {
+    if (!*pause) *shotgun_idx = 1;
+  }
+  if (state.keys[SDL_SCANCODE_T]) {
+    if (!*pause) *minimap = (*minimap + 1) % 2;
+  }
+  if (state.keys[SDL_SCANCODE_L]) {
+    if (*pause) *level_edit = 1;
+  }
+  if (state.keys[SDL_SCANCODE_Z]) {
+    save_map();
+  }
+  if (state.keys[SDL_SCANCODE_R]) {
+    load_map("levels/one.lvl");
+  }
+  if (state.keys[SDL_SCANCODE_N]) {
+    if (*level_edit) new_lvl();
+  }
   return 0;
 }
