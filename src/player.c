@@ -1,5 +1,3 @@
-#include <stdio.h>
-
 #include "../include/player.h"
 
 void move(player* p, int dir) {
@@ -23,7 +21,6 @@ void rotate(player* p, int dir) {
 void jump(player* p) { p->vel.y = JUMP_HEIGHT; }
 
 void update_player(player* p) {
-  printf("VELOCITY VECTOR: <%f,%f,%f>\n", p->vel.x, p->vel.y, p->vel.z);
   p->pos.x += round(p->vel.x);
   p->pos.z += round(p->vel.z);
   p->pos.y += p->vel.y;
