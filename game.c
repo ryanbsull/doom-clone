@@ -180,7 +180,9 @@ int game_loop() {
       case SDL_MOUSEBUTTONUP:
         if (level_edit) {
           translate_to_editor(e.button.x, e.button.y, &wall_e, &state.editor);
-          add_wall(&current_map, &wall_s, &wall_e, 0);
+          if (sqrt((wall_s.x - wall_e.x) * (wall_s.x - wall_e.x) +
+                   (wall_s.y - wall_e.y) * (wall_s.y - wall_e.y)) > 5)
+            add_wall(&current_map, &wall_s, &wall_e, 0);
           // reset wall values
           wall_s.x = MAX_MAP_VAL;
           wall_s.y = MAX_MAP_VAL;
@@ -243,8 +245,8 @@ int handle_keys(int* pause, int* level_edit, int* shotgun_idx, int* minimap,
                 int* print, int dt) {
   static int num_esc = 0;
   state.keys = SDL_GetKeyboardState(NULL);
-  num_esc += state.keys[SDL_SCANCODE_ESCAPE];
-  if (num_esc > 3) {
+  if (num_esc <= 4) num_esc += state.keys[SDL_SCANCODE_ESCAPE];
+  if (num_esc > 4) {
     *pause = !*pause;
     if (!*pause) *level_edit = 0;
     SDL_SetRelativeMouseMode(!*pause);

@@ -83,7 +83,11 @@ void new_lvl() {
 }
 
 void add_wall(map_data* map, int_vec2* start, int_vec2* end, int section) {
-  static int tex = 30;
+  int tex = 0, height = 10;
+  printf("ENTER HEIGHT: ");
+  scanf("%d", &height);
+  printf("ENTER TEXTURE: ");
+  scanf("%d", &tex);
   if (section > map->num_sections) return;
   map->sections[section].num_walls++;
   wall* w = map->sections[section].walls;
@@ -101,8 +105,8 @@ void add_wall(map_data* map, int_vec2* start, int_vec2* end, int section) {
   w->start.y = start->y;
   w->end.x = end->x;
   w->end.y = end->y;
-  w->height = 10;
-  w->texture = tex++;
+  w->height = height;
+  w->texture = tex;
 }
 
 void pop_wall(map_data* map, int section) {
