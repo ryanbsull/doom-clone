@@ -311,6 +311,8 @@ void draw_player_to_grid(u32* pixels, player* p, int_vec2* editor) {
   }
 }
 
+void draw_text(u32* pixels, char* str, int len) {}
+
 void draw_level_edit(u32* pixels, map_data* level, player* p,
                      int_vec2* editor) {
   draw_grid(pixels);
