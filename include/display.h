@@ -27,6 +27,9 @@
 #define PAUSE_LOGO_W 1126
 #define PAUSE_LOGO_H 710
 
+#define FONT_H 1150
+#define FONT_W 1000
+
 enum side { x_side, y_side };
 
 void display_textures(uint32_t* pixels);

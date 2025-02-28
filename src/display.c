@@ -3,12 +3,13 @@
 SDL_Surface* textures;
 SDL_Surface* shotgun;
 SDL_Surface* pause_logo;
+SDL_Surface* text;
 
 void display_textures(u32* pixels) {
   for (int i = 0; i < SCREEN_WIDTH; i++)
     for (int j = 0; j < SCREEN_HEIGHT; j++)
       pixels[j * SCREEN_WIDTH + i] =
-          ((u32*)textures->pixels)[j * SCREEN_WIDTH + i];
+          ((u32*)textures->pixels)[j * TEX_FILE_WIDTH + i];
 }
 
 int init_textures() {
@@ -19,6 +20,7 @@ int init_textures() {
   textures = IMG_Load("textures/environment.png");
   shotgun = IMG_Load("textures/shotgun.png");
   pause_logo = IMG_Load("textures/pause_logo.png");
+  text = IMG_Load("textures/font.png");
   return 0;
 }
 
@@ -311,7 +313,19 @@ void draw_player_to_grid(u32* pixels, player* p, int_vec2* editor) {
   }
 }
 
-void draw_text(u32* pixels, char* str, int len) {}
+void draw_text(u32* pixels, char* str, int len) {
+  int step_x = FONT_W / (SCREEN_WIDTH);
+  int step_y = FONT_H / (SCREEN_HEIGHT);
+  int tex_x, tex_y;
+  for (int x = 0; x < SCREEN_WIDTH; x++) {
+    for (int y = 0; y < SCREEN_HEIGHT; y++) {
+      tex_x = x * step_x;
+      tex_y = FONT_H - (y * step_y);
+      pixels[y * SCREEN_WIDTH + x] =
+          ((u32*)text->pixels)[tex_y * FONT_W + tex_x];
+    }
+  }
+}
 
 void draw_level_edit(u32* pixels, map_data* level, player* p,
                      int_vec2* editor) {

@@ -226,7 +226,8 @@ int game_loop() {
         draw_temp_wall(state.pixels, &wall_s, &wall_e, &state.editor);
     } else {
       clear_screen(state.pixels);
-      pause_screen(state.pixels);
+      draw_text(state.pixels, "", 0);
+      // pause_screen(state.pixels);
     }
   }
   render_screen(state.texture, state.renderer, state.pixels);
