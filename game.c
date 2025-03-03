@@ -13,6 +13,7 @@
 #include "include/editor.h"
 #include "include/map.h"
 #include "include/player.h"
+#include "include/util.h"
 
 struct {
   SDL_Window* win;
