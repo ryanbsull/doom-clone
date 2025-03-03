@@ -207,8 +207,6 @@ int game_loop() {
     }
 
     draw_shotgun(state.pixels, shotgun_idx / 10);
-    int_vec2 example_pos = {10, SCREEN_HEIGHT - 60};
-    draw_text(state.pixels, &example_pos, 50, "HELLO WORLD", 11);
     if (dt > 20) {
       if (shotgun_idx != 0) {
         shotgun_idx = (shotgun_idx + 3) % 70;
