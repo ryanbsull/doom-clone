@@ -313,16 +313,33 @@ void draw_player_to_grid(u32* pixels, player* p, int_vec2* editor) {
   }
 }
 
-void draw_text(u32* pixels, char* str, int len) {
-  int step_x = FONT_W / (SCREEN_WIDTH);
-  int step_y = FONT_H / (SCREEN_HEIGHT);
+void get_letter_offset(int_vec2* offset, char letter) {
+  if (letter >= 65 && letter <= 90) {
+    int l_idx = (letter - 65);
+    offset->x = (l_idx % 9) * LETTER_W + 12;
+    offset->y = -(l_idx / 9) * LETTER_H + 10;
+  }
+}
+
+void draw_text(u32* pixels, int_vec2* pos, int size, char* str, int len) {
+  float step_x = (float)(LETTER_W - 10) / size;
+  float step_y = (float)(LETTER_H - 10) / size;
   int tex_x, tex_y;
-  for (int x = 0; x < SCREEN_WIDTH; x++) {
-    for (int y = 0; y < SCREEN_HEIGHT; y++) {
-      tex_x = x * step_x;
-      tex_y = FONT_H - (y * step_y);
-      pixels[y * SCREEN_WIDTH + x] =
-          ((u32*)text->pixels)[tex_y * FONT_W + tex_x];
+  int_vec2 offset = {0, 0};
+  for (int i = 0; i < len; i++) {
+    if (str[i] && str[i] != ' ') {
+      get_letter_offset(&offset, str[i]);
+      int screen_offset = i * size;
+      for (int x = 0; x < size; x++) {
+        for (int y = 0; y < size - 10; y++) {
+          tex_x = x * step_x + offset.x;
+          tex_y = LETTER_H - (y * step_y + offset.y);
+          u32 pixel_val = ((u32*)text->pixels)[tex_y * FONT_W + tex_x];
+          if (pixel_val != 4291611852 && pixel_val != 0)
+            pixels[(y + pos->y) * SCREEN_WIDTH + (x + pos->x + screen_offset)] =
+                pixel_val;
+        }
+      }
     }
   }
 }

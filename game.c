@@ -13,6 +13,7 @@
 #include "include/editor.h"
 #include "include/map.h"
 #include "include/player.h"
+#include "include/util.h"
 
 struct {
   SDL_Window* win;
@@ -206,6 +207,8 @@ int game_loop() {
     }
 
     draw_shotgun(state.pixels, shotgun_idx / 10);
+    int_vec2 example_pos = {10, SCREEN_HEIGHT - 60};
+    draw_text(state.pixels, &example_pos, 50, "HELLO WORLD", 11);
     if (dt > 20) {
       if (shotgun_idx != 0) {
         shotgun_idx = (shotgun_idx + 3) % 70;
@@ -226,8 +229,7 @@ int game_loop() {
         draw_temp_wall(state.pixels, &wall_s, &wall_e, &state.editor);
     } else {
       clear_screen(state.pixels);
-      draw_text(state.pixels, "", 0);
-      // pause_screen(state.pixels);
+      pause_screen(state.pixels);
     }
   }
   render_screen(state.texture, state.renderer, state.pixels);
