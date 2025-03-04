@@ -318,6 +318,10 @@ void get_letter_offset(int_vec2* offset, char letter) {
     int l_idx = (letter - 65);
     offset->x = (l_idx % 9) * LETTER_W + 12;
     offset->y = -(l_idx / 9) * LETTER_H + 10;
+  } else if (letter >= 97 && letter <= 122) {
+    int l_idx = (letter - 97);
+    offset->x = (l_idx % 9) * LETTER_W + 12;
+    offset->y = -(l_idx / 9) * LETTER_H - 10 - 3 * LETTER_H;
   }
 }
 
