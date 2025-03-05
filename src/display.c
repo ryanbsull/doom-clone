@@ -322,10 +322,15 @@ void get_letter_offset(int_vec2* offset, char letter) {
     int l_idx = (letter - 97);
     offset->x = (l_idx % 9) * LETTER_W + 12;
     offset->y = -(l_idx / 9) * LETTER_H - 10 - 3 * LETTER_H;
+  } else if (letter >= 48 && letter <= 57) {
+    int l_idx = (letter - 48);
+    offset->x = (l_idx % 9) * LETTER_W + 15;
+    offset->y = -(l_idx / 9) * LETTER_H - 25 - 6 * LETTER_H;
   }
 }
 
-void draw_text(u32* pixels, int_vec2* pos, int size, char* str, int len) {
+void draw_text(u32* pixels, int_vec2* pos, int size, char* str, int len,
+               u32 color) {
   float step_x = (float)(LETTER_W - 10) / size;
   float step_y = (float)(LETTER_H - 10) / size;
   int tex_x, tex_y;
@@ -341,7 +346,7 @@ void draw_text(u32* pixels, int_vec2* pos, int size, char* str, int len) {
           u32 pixel_val = ((u32*)text->pixels)[tex_y * FONT_W + tex_x];
           if (pixel_val != 4291611852 && pixel_val != 0)
             pixels[(y + pos->y) * SCREEN_WIDTH + (x + pos->x + screen_offset)] =
-                pixel_val;
+                color;
         }
       }
     }
