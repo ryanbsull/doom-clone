@@ -36,7 +36,7 @@ int main() {
   printf("DOOM\n");
   if (init()) return 1;
   while (!game_loop()) {
-    SDL_Delay(5);
+    SDL_Delay(10);
   }
   return cleanup();
 }
@@ -207,6 +207,14 @@ int game_loop() {
     }
 
     draw_shotgun(state.pixels, shotgun_idx / 10);
+
+    // display the FPS in the top left
+    int_vec2 text_pos = {20, SCREEN_HEIGHT - 25};
+    char* str = (char*)malloc(sizeof(char) * 10);
+    int fps = 1000 / dt;
+    sprintf(str, "%d", fps);
+    draw_text(state.pixels, &text_pos, 20, str, 3, YELLOW_TEXT);
+
     if (dt > 20) {
       if (shotgun_idx != 0) {
         shotgun_idx = (shotgun_idx + 3) % 70;
