@@ -210,10 +210,11 @@ int game_loop() {
 
     // display the FPS in the top left
     int_vec2 text_pos = {20, SCREEN_HEIGHT - 25};
-    char* str = (char*)malloc(sizeof(char) * 10);
+    char* str = (char*)malloc(sizeof(char) * 20);
     int fps = 1000 / dt;
-    sprintf(str, "%d", fps);
-    draw_text(state.pixels, &text_pos, 20, str, 3, YELLOW_TEXT);
+    sprintf(str, "%d\n(%d %d %d)", fps, state.player.pos.x, state.player.pos.y,
+            state.player.pos.z);
+    draw_text(state.pixels, &text_pos, 20, str, 20, YELLOW_TEXT);
 
     if (dt > 20) {
       if (shotgun_idx != 0) {

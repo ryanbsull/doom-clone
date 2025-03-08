@@ -324,8 +324,12 @@ void get_letter_offset(int_vec2* offset, char letter) {
     offset->y = -(l_idx / 9) * LETTER_H - 10 - 3 * LETTER_H;
   } else if (letter >= 48 && letter <= 57) {
     int l_idx = (letter - 48);
-    offset->x = (l_idx % 9) * LETTER_W + 15;
+    offset->x = (l_idx % 9) * LETTER_W + 12;
     offset->y = -(l_idx / 9) * LETTER_H - 25 - 6 * LETTER_H;
+  } else if (letter == '(' || letter == ')') {
+    int l_idx = (letter - '(');
+    offset->x = (l_idx + 5) * LETTER_W + 12;
+    offset->y = -8 * LETTER_H - 20;
   }
 }
 
