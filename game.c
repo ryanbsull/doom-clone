@@ -30,7 +30,7 @@ int init();
 int game_loop();
 int cleanup();
 int handle_keys(int* pause, int* level_edit, int* shotgun_idx, int* minimap,
-                int* print, int dt);
+                int* print, int* stats, int dt);
 
 int main() {
   printf("DOOM\n");
@@ -153,7 +153,7 @@ int show_minimap(u32* pixels, player* p, vec3* pt) {
 int game_loop() {
   clear_screen(state.pixels);
   static int shotgun_idx = 0, minimap = 0, time = 0, dt = 0, pause = 1,
-             level_edit = 0;
+             level_edit = 0, stats = 0;
   static int_vec2 wall_s = {MAX_MAP_VAL, MAX_MAP_VAL},
                   wall_e = {MAX_MAP_VAL, MAX_MAP_VAL};
   int print = 0;
@@ -193,7 +193,7 @@ int game_loop() {
         break;
     }
   }
-  handle_keys(&pause, &level_edit, &shotgun_idx, &minimap, &print, dt);
+  handle_keys(&pause, &level_edit, &shotgun_idx, &minimap, &print, &stats, dt);
 
   if (!pause) {
     draw_ceiling(state.pixels, current_map.sections[0].ceiling_tex);
@@ -208,13 +208,15 @@ int game_loop() {
 
     draw_shotgun(state.pixels, shotgun_idx / 10);
 
-    // display the FPS in the top left
-    int_vec2 text_pos = {20, SCREEN_HEIGHT - 25};
-    char* str = (char*)malloc(sizeof(char) * 20);
-    int fps = 1000 / dt;
-    sprintf(str, "%d\n(%d %d %d)", fps, state.player.pos.x, state.player.pos.y,
-            state.player.pos.z);
-    draw_text(state.pixels, &text_pos, 20, str, 20, YELLOW_TEXT);
+    if (stats) {
+      // display the FPS in the top left
+      int_vec2 text_pos = {20, SCREEN_HEIGHT - 25};
+      char* str = (char*)malloc(sizeof(char) * 20);
+      int fps = 1000 / dt;
+      sprintf(str, "%d\n(%d %d %d)", fps, state.player.pos.x,
+              state.player.pos.y, state.player.pos.z);
+      draw_text(state.pixels, &text_pos, 20, str, 20, YELLOW_TEXT);
+    }
 
     if (dt > 20) {
       if (shotgun_idx != 0) {
@@ -252,7 +254,7 @@ int cleanup() {
 }
 
 int handle_keys(int* pause, int* level_edit, int* shotgun_idx, int* minimap,
-                int* print, int dt) {
+                int* print, int* stats, int dt) {
   static int num_esc = 0;
   state.keys = SDL_GetKeyboardState(NULL);
   if (num_esc <= 4) num_esc += state.keys[SDL_SCANCODE_ESCAPE];
@@ -293,6 +295,9 @@ int handle_keys(int* pause, int* level_edit, int* shotgun_idx, int* minimap,
       move(&state.player, RIGHT);
     else
       move_editor(&state.editor, RIGHT);
+  }
+  if (state.keys[SDL_SCANCODE_T]) {
+    if (!*pause) *stats = 1;
   }
   if (state.keys[SDL_SCANCODE_P]) {
     printf(
