@@ -239,6 +239,9 @@ int pause_screen(u32* pixels) {
           ((u32*)pause_logo->pixels)[tex_y * PAUSE_LOGO_W + tex_x];
     }
   }
+
+  int_vec2 start_button = {SCREEN_WIDTH / 2 - 60, 50};
+  draw_text(pixels, &start_button, 25, "START", 5, 0xFFFFFFFF);
   return 0;
 }
 
