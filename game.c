@@ -24,6 +24,7 @@ struct {
   int_vec2 editor;
   const unsigned char* keys;
   int key_size;
+  text* screen_text;
 } state;
 
 int init();
@@ -88,6 +89,19 @@ int init() {
   state.keys = SDL_GetKeyboardState(&state.key_size);
   init_textures();
   SDL_SetRelativeMouseMode(SDL_FALSE);
+
+  // init blank text object
+  state.screen_text = (text*)(malloc(sizeof(text)));
+  state.screen_text->clickable = 0;
+  state.screen_text->display = 0;
+  state.screen_text->font_size = 0;
+  state.screen_text->len = 0;
+  state.screen_text->pos.x = 0;
+  state.screen_text->pos.y = 0;
+  state.screen_text->color = 0x00000000;
+  state.screen_text->msg = NULL;
+  state.screen_text->next = NULL;
+
   return 0;
 }
 

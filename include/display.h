@@ -37,6 +37,17 @@
 
 enum side { x_side, y_side };
 
+typedef struct text_area {
+  int display;
+  int clickable;
+  int font_size;
+  int len;
+  int_vec2 pos;
+  u32 color;
+  char* msg;
+  struct text_area* next;
+} text;
+
 void display_textures(uint32_t* pixels);
 int init_textures();
 void get_texture_idx(int idx, int* tex_x, int* tex_y);

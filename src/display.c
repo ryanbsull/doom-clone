@@ -3,7 +3,7 @@
 SDL_Surface* textures;
 SDL_Surface* shotgun;
 SDL_Surface* pause_logo;
-SDL_Surface* text;
+SDL_Surface* font;
 
 void display_textures(u32* pixels) {
   for (int i = 0; i < SCREEN_WIDTH; i++)
@@ -20,7 +20,7 @@ int init_textures() {
   textures = IMG_Load("textures/environment.png");
   shotgun = IMG_Load("textures/shotgun.png");
   pause_logo = IMG_Load("textures/pause_logo.png");
-  text = IMG_Load("textures/font.png");
+  font = IMG_Load("textures/font.png");
   return 0;
 }
 
@@ -356,7 +356,7 @@ void draw_text(u32* pixels, int_vec2* pos, int size, char* str, int len,
         for (int y = 0; y < size - 5; y++) {
           tex_x = x * step_x + offset.x;
           tex_y = LETTER_H - (y * step_y + offset.y);
-          u32 pixel_val = ((u32*)text->pixels)[tex_y * FONT_W + tex_x];
+          u32 pixel_val = ((u32*)font->pixels)[tex_y * FONT_W + tex_x];
           if (pixel_val != 4291611852 && pixel_val != 0)
             pixels[(y + pos->y) * SCREEN_WIDTH + (x + pos->x + screen_offset)] =
                 color;
