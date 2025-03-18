@@ -222,15 +222,33 @@ int game_loop() {
 
     draw_shotgun(state.pixels, shotgun_idx / 10);
 
+    if (!state.screen_text->next) {
+      state.screen_text->next = (text*)malloc(sizeof(text));
+      state.screen_text->next->init = 0;
+    }
+    text* stat_txt = state.screen_text->next;
     if (stats) {
       // display the FPS in the top left
-      int_vec2 text_pos = {20, SCREEN_HEIGHT - 25};
-      char* str = (char*)malloc(sizeof(char) * 20);
+      if (!stat_txt->init) {
+        int_vec2 text_pos = {20, SCREEN_HEIGHT - 25};
+        memcpy(&stat_txt->pos, &text_pos, sizeof(int_vec2));
+        stat_txt->len = 20;
+        stat_txt->font_size = 20;
+        stat_txt->clickable = 0;
+        stat_txt->color = YELLOW_TEXT;
+        stat_txt->msg = (char*)malloc(stat_txt->len * sizeof(char));
+        stat_txt->next = NULL;
+      }
+
+      memset(stat_txt->msg, 0, stat_txt->len);
       int fps = 1000 / dt;
-      sprintf(str, "%d\n(%d %d %d)", fps, state.player.pos.x,
+      sprintf(stat_txt->msg, "%d\n(%d %d %d)", fps, state.player.pos.x,
               state.player.pos.y, state.player.pos.z);
-      draw_text(state.pixels, &text_pos, 20, str, 20, YELLOW_TEXT);
+      stat_txt->display = 1;
+    } else {
+      if (stat_txt) stat_txt->display = 0;
     }
+    draw_text(state.pixels, stat_txt);
 
     if (dt > 20) {
       if (shotgun_idx != 0) {
