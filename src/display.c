@@ -242,8 +242,10 @@ int pause_screen(u32* pixels) {
 
   static text* start_button;
   if (!start_button) {
+    int_vec2 pos = {SCREEN_WIDTH / 2 - 60, 50};
+    init_text(&pos, 25, "START", 5, 0xFFFFFFFF, 0, 1, &start_button);
+    /*
     start_button = (text*)malloc(sizeof(text));
-    int_vec2 loc = {SCREEN_WIDTH / 2 - 60, 50};
     memcpy(&start_button->pos, &loc, sizeof(int_vec2));
     start_button->len = 5;
     start_button->font_size = 25;
@@ -251,9 +253,9 @@ int pause_screen(u32* pixels) {
     start_button->display = 1;
     start_button->msg = (char*)malloc(start_button->len * sizeof(char));
     start_button->color = 0xFFFFFFFF;
-    strcpy(start_button->msg, "START");
+    strcpy(start_button->msg, "START");*/
   }
-  draw_text(pixels, start_button);
+  // draw_text(pixels, start_button);
   return 0;
 }
 
@@ -356,10 +358,11 @@ void draw_text(u32* pixels, text* txt) {
   int tex_x, tex_y;
   int_vec2 offset = {0, 0};
   int screen_offset = -txt->font_size;
+  int y_pos = txt->pos.y;
   for (int i = 0; i < txt->len; i++) {
     screen_offset += txt->font_size;
     if (txt->msg[i] && txt->msg[i] == '\n') {
-      txt->pos.y -= txt->font_size + 10;
+      y_pos -= txt->font_size + 10;
       screen_offset = -txt->font_size;
       continue;
     }
@@ -371,12 +374,26 @@ void draw_text(u32* pixels, text* txt) {
           tex_y = LETTER_H - (y * step_y + offset.y);
           u32 pixel_val = ((u32*)font->pixels)[tex_y * FONT_W + tex_x];
           if (pixel_val != 4291611852 && pixel_val != 0)
-            pixels[(y + txt->pos.y) * SCREEN_WIDTH +
+            pixels[(y + y_pos) * SCREEN_WIDTH +
                    (x + txt->pos.x + screen_offset)] = txt->color;
         }
       }
     }
   }
+}
+
+void init_text(int_vec2* pos, int size, char* str, int len, u32 color,
+               int clickable, int display, text** ptr) {
+  *ptr = (text*)(malloc(sizeof(text)));
+  (*ptr)->clickable = clickable;
+  (*ptr)->display = display;
+  (*ptr)->font_size = size;
+  (*ptr)->len = len;
+  memcpy(&(*ptr)->pos, pos, sizeof(int_vec2));
+  (*ptr)->color = color;
+  (*ptr)->msg = (char*)malloc(len * sizeof(char));
+  memcpy((*ptr)->msg, str, len);
+  (*ptr)->next = NULL;
 }
 
 void draw_level_edit(u32* pixels, map_data* level, player* p,

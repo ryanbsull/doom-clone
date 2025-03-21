@@ -38,12 +38,12 @@
 enum side { x_side, y_side };
 
 typedef struct text_area {
+  int_vec2 pos;
   int display;
   int clickable;
   int font_size;
   int len;
   int init;
-  int_vec2 pos;
   u32 color;
   char* msg;
   struct text_area* next;
@@ -63,8 +63,8 @@ void draw_floor(u32* pixels, int floor_tex);
 int clear_screen(uint32_t* pixels);
 void draw_level_edit(u32* pixels, map_data* level, player* p, int_vec2* editor);
 void draw_temp_wall(u32* pixels, int_vec2* s, int_vec2* e, int_vec2* editor);
-void add_text(u32* pixels, text* txt, int_vec2* pos, int size, char* str,
-              int len, u32 color, int clickable, int display, text* ptr);
+void init_text(int_vec2* pos, int size, char* str, int len, u32 color,
+               int clickable, int display, text** ptr);
 void draw_text(u32* pixels, text* txt);
 int render_screen(SDL_Texture* texture, SDL_Renderer* renderer,
                   uint32_t* pixels);

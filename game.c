@@ -91,17 +91,8 @@ int init() {
   SDL_SetRelativeMouseMode(SDL_FALSE);
 
   // init blank text object
-  state.screen_text = (text*)(malloc(sizeof(text)));
-  state.screen_text->clickable = 0;
-  state.screen_text->display = 0;
-  state.screen_text->font_size = 0;
-  state.screen_text->len = 0;
-  state.screen_text->pos.x = 0;
-  state.screen_text->pos.y = 0;
-  state.screen_text->color = 0x00000000;
-  state.screen_text->msg = NULL;
-  state.screen_text->next = NULL;
-
+  int_vec2 pos = {0, 0};
+  init_text(&pos, 0, NULL, 0, 0x00000000, 0, 0, &state.screen_text);
   return 0;
 }
 
@@ -223,23 +214,14 @@ int game_loop() {
     draw_shotgun(state.pixels, shotgun_idx / 10);
 
     if (!state.screen_text->next) {
-      state.screen_text->next = (text*)malloc(sizeof(text));
-      state.screen_text->next->init = 0;
+      int_vec2 text_pos = {20, SCREEN_HEIGHT - 25};
+      char* init = (char*)malloc(20 * sizeof(char));
+      init_text(&text_pos, 20, init, 20, YELLOW_TEXT, 0, 0,
+                &state.screen_text->next);
     }
     text* stat_txt = state.screen_text->next;
     if (stats) {
       // display the FPS in the top left
-      if (!stat_txt->init) {
-        int_vec2 text_pos = {20, SCREEN_HEIGHT - 25};
-        memcpy(&stat_txt->pos, &text_pos, sizeof(int_vec2));
-        stat_txt->len = 20;
-        stat_txt->font_size = 20;
-        stat_txt->clickable = 0;
-        stat_txt->color = YELLOW_TEXT;
-        stat_txt->msg = (char*)malloc(stat_txt->len * sizeof(char));
-        stat_txt->next = NULL;
-      }
-
       memset(stat_txt->msg, 0, stat_txt->len);
       int fps = 1000 / dt;
       sprintf(stat_txt->msg, "%d\n(%d %d %d)", fps, state.player.pos.x,
@@ -248,6 +230,7 @@ int game_loop() {
     } else {
       if (stat_txt) stat_txt->display = 0;
     }
+    if (stat_txt->pos.y != SCREEN_HEIGHT - 25) printf("WHAT HAPPENED?\n");
     draw_text(state.pixels, stat_txt);
 
     if (dt > 20) {
