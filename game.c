@@ -216,7 +216,7 @@ int game_loop() {
     if (!state.screen_text->next) {
       int_vec2 text_pos = {20, SCREEN_HEIGHT - 25};
       char* init = (char*)malloc(20 * sizeof(char));
-      init_text(&text_pos, 20, init, 20, YELLOW_TEXT, 0, 0,
+      init_text(&text_pos, 15, init, 20, YELLOW_TEXT, 0, 0,
                 &state.screen_text->next);
     }
     text* stat_txt = state.screen_text->next;
@@ -224,7 +224,7 @@ int game_loop() {
       // display the FPS in the top left
       memset(stat_txt->msg, 0, stat_txt->len);
       int fps = 1000 / dt;
-      sprintf(stat_txt->msg, "%d\n(%d %d %d)", fps, state.player.pos.x,
+      sprintf(stat_txt->msg, "%d fps\n(%d %d %d)", fps, state.player.pos.x,
               state.player.pos.y, state.player.pos.z);
       stat_txt->display = 1;
     } else {
