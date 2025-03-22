@@ -24,6 +24,7 @@ struct {
   int_vec2 editor;
   const unsigned char* keys;
   int key_size;
+  text* screen_text;
 } state;
 
 int init();
@@ -88,6 +89,10 @@ int init() {
   state.keys = SDL_GetKeyboardState(&state.key_size);
   init_textures();
   SDL_SetRelativeMouseMode(SDL_FALSE);
+
+  // init blank text object
+  int_vec2 pos = {0, 0};
+  init_text(&pos, 0, NULL, 0, 0x00000000, 0, 0, &state.screen_text);
   return 0;
 }
 
@@ -208,15 +213,25 @@ int game_loop() {
 
     draw_shotgun(state.pixels, shotgun_idx / 10);
 
+    if (!state.screen_text->next) {
+      int_vec2 text_pos = {20, SCREEN_HEIGHT - 25};
+      char* init = (char*)malloc(20 * sizeof(char));
+      init_text(&text_pos, 15, init, 20, YELLOW_TEXT, 0, 0,
+                &state.screen_text->next);
+    }
+    text* stat_txt = state.screen_text->next;
     if (stats) {
       // display the FPS in the top left
-      int_vec2 text_pos = {20, SCREEN_HEIGHT - 25};
-      char* str = (char*)malloc(sizeof(char) * 20);
+      memset(stat_txt->msg, 0, stat_txt->len);
       int fps = 1000 / dt;
-      sprintf(str, "%d\n(%d %d %d)", fps, state.player.pos.x,
+      sprintf(stat_txt->msg, "%d fps\n(%d %d %d)", fps, state.player.pos.x,
               state.player.pos.y, state.player.pos.z);
-      draw_text(state.pixels, &text_pos, 20, str, 20, YELLOW_TEXT);
+      stat_txt->display = 1;
+    } else {
+      if (stat_txt) stat_txt->display = 0;
     }
+    if (stat_txt->pos.y != SCREEN_HEIGHT - 25) printf("WHAT HAPPENED?\n");
+    draw_text(state.pixels, stat_txt);
 
     if (dt > 20) {
       if (shotgun_idx != 0) {

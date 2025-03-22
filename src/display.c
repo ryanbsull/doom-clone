@@ -3,7 +3,7 @@
 SDL_Surface* textures;
 SDL_Surface* shotgun;
 SDL_Surface* pause_logo;
-SDL_Surface* text;
+SDL_Surface* font;
 
 void display_textures(u32* pixels) {
   for (int i = 0; i < SCREEN_WIDTH; i++)
@@ -20,7 +20,7 @@ int init_textures() {
   textures = IMG_Load("textures/environment.png");
   shotgun = IMG_Load("textures/shotgun.png");
   pause_logo = IMG_Load("textures/pause_logo.png");
-  text = IMG_Load("textures/font.png");
+  font = IMG_Load("textures/font.png");
   return 0;
 }
 
@@ -239,6 +239,23 @@ int pause_screen(u32* pixels) {
           ((u32*)pause_logo->pixels)[tex_y * PAUSE_LOGO_W + tex_x];
     }
   }
+
+  static text* start_button;
+  if (!start_button) {
+    int_vec2 pos = {SCREEN_WIDTH / 2 - 60, 50};
+    init_text(&pos, 25, "START", 5, 0xFFFFFFFF, 0, 1, &start_button);
+    /*
+    start_button = (text*)malloc(sizeof(text));
+    memcpy(&start_button->pos, &loc, sizeof(int_vec2));
+    start_button->len = 5;
+    start_button->font_size = 25;
+    start_button->clickable = 0;
+    start_button->display = 1;
+    start_button->msg = (char*)malloc(start_button->len * sizeof(char));
+    start_button->color = 0xFFFFFFFF;
+    strcpy(start_button->msg, "START");*/
+  }
+  // draw_text(pixels, start_button);
   return 0;
 }
 
@@ -333,34 +350,50 @@ void get_letter_offset(int_vec2* offset, char letter) {
   }
 }
 
-void draw_text(u32* pixels, int_vec2* pos, int size, char* str, int len,
-               u32 color) {
-  float step_x = (float)(LETTER_W - 10) / size;
-  float step_y = (float)(LETTER_H - 5) / size;
+void draw_text(u32* pixels, text* txt) {
+  if (!txt->display) return;
+
+  float step_x = (float)(LETTER_W - 10) / txt->font_size;
+  float step_y = (float)(LETTER_H - 5) / txt->font_size;
   int tex_x, tex_y;
   int_vec2 offset = {0, 0};
-  int screen_offset = -size;
-  for (int i = 0; i < len; i++) {
-    screen_offset += size;
-    if (str[i] && str[i] == '\n') {
-      pos->y -= size + 10;
-      screen_offset = -size;
+  int screen_offset = -txt->font_size;
+  int y_pos = txt->pos.y;
+  for (int i = 0; i < txt->len; i++) {
+    screen_offset += txt->font_size;
+    if (txt->msg[i] && txt->msg[i] == '\n') {
+      y_pos -= txt->font_size + 10;
+      screen_offset = -txt->font_size;
       continue;
     }
-    if (str[i] && str[i] != ' ') {
-      get_letter_offset(&offset, str[i]);
-      for (int x = 0; x < size; x++) {
-        for (int y = 0; y < size - 5; y++) {
+    if (txt->msg[i] && txt->msg[i] != ' ') {
+      get_letter_offset(&offset, txt->msg[i]);
+      for (int x = 0; x < txt->font_size; x++) {
+        for (int y = 0; y < txt->font_size - 5; y++) {
           tex_x = x * step_x + offset.x;
           tex_y = LETTER_H - (y * step_y + offset.y);
-          u32 pixel_val = ((u32*)text->pixels)[tex_y * FONT_W + tex_x];
+          u32 pixel_val = ((u32*)font->pixels)[tex_y * FONT_W + tex_x];
           if (pixel_val != 4291611852 && pixel_val != 0)
-            pixels[(y + pos->y) * SCREEN_WIDTH + (x + pos->x + screen_offset)] =
-                color;
+            pixels[(y + y_pos) * SCREEN_WIDTH +
+                   (x + txt->pos.x + screen_offset)] = txt->color;
         }
       }
     }
   }
+}
+
+void init_text(int_vec2* pos, int size, char* str, int len, u32 color,
+               int clickable, int display, text** ptr) {
+  *ptr = (text*)(malloc(sizeof(text)));
+  (*ptr)->clickable = clickable;
+  (*ptr)->display = display;
+  (*ptr)->font_size = size;
+  (*ptr)->len = len;
+  memcpy(&(*ptr)->pos, pos, sizeof(int_vec2));
+  (*ptr)->color = color;
+  (*ptr)->msg = (char*)malloc(len * sizeof(char));
+  memcpy((*ptr)->msg, str, len);
+  (*ptr)->next = NULL;
 }
 
 void draw_level_edit(u32* pixels, map_data* level, player* p,
