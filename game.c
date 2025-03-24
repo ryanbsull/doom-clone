@@ -201,14 +201,10 @@ int game_loop() {
   handle_keys(&pause, &level_edit, &shotgun_idx, &minimap, &print, &stats, dt);
 
   if (!pause) {
-    draw_ceiling(state.pixels, current_map.sections[0].ceiling_tex);
-    draw_floor(state.pixels, current_map.sections[0].floor_tex);
-    current_map.sections[0].walls =
-        reorder_walls(current_map.sections[0].walls, &state.player);
-    wall* tmp = current_map.sections[0].walls;
-    while (tmp != NULL) {
-      draw_wall(state.pixels, &state.player, tmp);
-      tmp = tmp->next;
+    draw_sky(state.pixels, current_map.sky_tex);
+    draw_floor(state.pixels, current_map.floor_tex);
+    for (int i = 0; i < current_map.num_sections; i++) {
+      draw_section(state.pixels, &state.player, &current_map.sections[i]);
     }
 
     draw_shotgun(state.pixels, shotgun_idx / 10);
@@ -216,7 +212,7 @@ int game_loop() {
     if (!state.screen_text->next) {
       int_vec2 text_pos = {20, SCREEN_HEIGHT - 25};
       char* init = (char*)malloc(20 * sizeof(char));
-      init_text(&text_pos, 15, init, 20, YELLOW_TEXT, 0, 0,
+      init_text(&text_pos, 15, init, 20, YELLOW, 0, 0,
                 &state.screen_text->next);
     }
     text* stat_txt = state.screen_text->next;
