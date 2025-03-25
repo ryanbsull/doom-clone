@@ -150,8 +150,7 @@ void fill_wall_textured(u32* pixels, int_vec2* start_t, int_vec2* end_t,
                         float wall_len) {
   int dx = end_t->x - start_t->x, dy_t = end_t->y - start_t->y,
       dy_b = end_b->y - start_b->y;
-  float step_x = (float)TEXTURE_WIDTH / (float)dx, step_y;
-  printf("STEP: %f\n", step_x);
+  float step_x = (TEXTURE_WIDTH / (float)dx), step_y;
   int tex_x_base, tex_y_base, tex_x, tex_y;
   int x, y_b, y_t;
   get_texture_idx(tex_idx, &tex_x_base, &tex_y_base);
@@ -170,9 +169,9 @@ void fill_wall_textured(u32* pixels, int_vec2* start_t, int_vec2* end_t,
     if (y_b < 0) {
       y_b = 0;
     }
+    tex_x = ((int)(i * step_x) % TEXTURE_WIDTH) + tex_x_base;
     for (int j = y_b; j < y_t; j++)
       if (x >= 0 && x < SCREEN_WIDTH) {
-        tex_x = ((int)(i * step_x) % TEXTURE_WIDTH) + tex_x_base;
         tex_y = ((j - y_b) * step_y) + tex_y_base;
         pixels[(j * SCREEN_WIDTH) + x] =
             ((u32*)textures->pixels)[tex_y * TEX_FILE_WIDTH + tex_x];
