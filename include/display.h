@@ -33,7 +33,7 @@
 #define LETTER_W 110
 #define LETTER_H 120
 
-#define YELLOW_TEXT 0xFFFFD300
+#define YELLOW 0xFFFFD300
 
 enum side { x_side, y_side };
 
@@ -57,8 +57,9 @@ int draw_shotgun(uint32_t* pixels, int idx);
 int draw_ray(uint32_t* pixels, int x, int hit_point, int start, int end,
              int idx, int side);
 int draw_point(uint32_t* pixels, player* p, int_vec3* pt);
+int draw_section(u32* pixels, player* p, map_section* s);
 int draw_wall(uint32_t* pixels, player* p, wall* w);
-void draw_ceiling(u32* pixels, int ceiling_tex);
+void draw_sky(u32* pixels, int ceiling_tex);
 void draw_floor(u32* pixels, int floor_tex);
 int clear_screen(uint32_t* pixels);
 void draw_level_edit(u32* pixels, map_data* level, player* p, int_vec2* editor);

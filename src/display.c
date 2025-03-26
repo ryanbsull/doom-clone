@@ -76,7 +76,7 @@ int draw_point(u32* pixels, player* p, int_vec3* pt) {
   return 0;
 }
 
-void clip_wall(int* x0, int* y0, int* z0, int x1, int y1, int z1) {
+float clip_wall(int* x0, int* y0, int* z0, int x1, int y1, int z1) {
   float da = *z0;
   float db = z1;
   float d = da - db;
@@ -90,6 +90,7 @@ void clip_wall(int* x0, int* y0, int* z0, int x1, int y1, int z1) {
   if (*z0 == 0) {
     *z0 = -1;
   }
+  return s;
 }
 
 void draw_line(u32* pixels, int_vec2* start, int_vec2* end) {
@@ -149,13 +150,10 @@ void fill_wall_textured(u32* pixels, int_vec2* start_t, int_vec2* end_t,
                         float wall_len) {
   int dx = end_t->x - start_t->x, dy_t = end_t->y - start_t->y,
       dy_b = end_b->y - start_b->y;
-  int screen_dx = clip_diff(end_t->x, start_t->x, SCREEN_WIDTH);
-  float step_x = (float)TEXTURE_WIDTH / (float)screen_dx, step_y;
-  int tex_x_base, tex_y_base, tex_x, tex_y, tex_x_offset = 0;
+  float step_x = (TEXTURE_WIDTH / (float)dx), step_y;
+  int tex_x_base, tex_y_base, tex_x, tex_y;
   int x, y_b, y_t;
   get_texture_idx(tex_idx, &tex_x_base, &tex_y_base);
-
-  if (start_b->x < 0) tex_x_offset += step_x * start_t->x;
 
   float slope_t = (float)dy_t / dx;
   float slope_b = (float)dy_b / dx;
@@ -163,17 +161,17 @@ void fill_wall_textured(u32* pixels, int_vec2* start_t, int_vec2* end_t,
   for (float i = 0; i < dx; i++) {
     x = start_b->x + i;
     y_b = start_b->y + (i * slope_b);
-    if (y_b < 0) {
-      y_b = 0;
-    }
     y_t = start_t->y + (i * slope_t);
+    step_y = TEXTURE_HEIGHT / (float)(y_t - y_b);
     if (y_t >= SCREEN_HEIGHT - 1) {
       y_t = SCREEN_HEIGHT;
     }
-    step_y = TEXTURE_HEIGHT / (float)(y_t - y_b);
+    if (y_b < 0) {
+      y_b = 0;
+    }
+    tex_x = ((int)(i * step_x) % TEXTURE_WIDTH) + tex_x_base;
     for (int j = y_b; j < y_t; j++)
       if (x >= 0 && x < SCREEN_WIDTH) {
-        tex_x = ((int)(i * step_x + tex_x_offset) % TEXTURE_WIDTH) + tex_x_base;
         tex_y = ((j - y_b) * step_y) + tex_y_base;
         pixels[(j * SCREEN_WIDTH) + x] =
             ((u32*)textures->pixels)[tex_y * TEX_FILE_WIDTH + tex_x];
@@ -227,6 +225,16 @@ int draw_wall(u32* pixels, player* p, wall* w) {
   return 0;
 }
 
+int draw_section(u32* pixels, player* p, map_section* s) {
+  s->walls = reorder_walls(s->walls, p);
+  wall* tmp = s->walls;
+  while (tmp != NULL) {
+    draw_wall(pixels, p, tmp);
+    tmp = tmp->next;
+  }
+  return 0;
+}
+
 int pause_screen(u32* pixels) {
   float step_x = (float)2 * PAUSE_LOGO_W / (SCREEN_WIDTH);
   float step_y = (float)2 * PAUSE_LOGO_H / (SCREEN_HEIGHT);
@@ -259,7 +267,7 @@ int pause_screen(u32* pixels) {
   return 0;
 }
 
-void draw_ceiling(u32* pixels, int ceiling_tex) {
+void draw_sky(u32* pixels, int ceiling_tex) {
   int tex_x, tex_y;
   get_texture_idx(ceiling_tex, &tex_x, &tex_y);
   for (int x = 0; x < SCREEN_WIDTH; x++) {

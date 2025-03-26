@@ -27,14 +27,16 @@ typedef struct {
   wall* walls;
   int num_walls;
   int floor;
-  int floor_tex;
+  u32 floor_color;
   int ceiling;
-  int ceiling_tex;
+  u32 ceiling_color;
 } map_section;
 
 typedef struct {
   map_section* sections;
   int num_sections;
+  int sky_tex;
+  int floor_tex;
 } map_data;
 
 extern map_data current_map;
