@@ -23,6 +23,7 @@ struct {
   player player;
   int_vec2 editor;
   const unsigned char* keys;
+  unsigned char* prev_keys;
   int key_size;
   text* screen_text;
 } state;
@@ -30,8 +31,7 @@ struct {
 int init();
 int game_loop();
 int cleanup();
-int handle_keys(int* pause, int* level_edit, int* shotgun_idx, int* minimap,
-                int* print, int* stats, int dt);
+int handle_keys(int* state_keys, int* print, int* stats, int dt);
 
 int main() {
   printf("DOOM\n");
@@ -87,6 +87,8 @@ int init() {
   state.editor.y = 0;
 
   state.keys = SDL_GetKeyboardState(&state.key_size);
+  state.prev_keys = (unsigned char*)malloc(sizeof(char) * state.key_size);
+  memset(state.prev_keys, 0, sizeof(unsigned char) * state.key_size);
   init_textures();
   SDL_SetRelativeMouseMode(SDL_FALSE);
 
@@ -157,8 +159,21 @@ int show_minimap(u32* pixels, player* p, vec3* pt) {
 
 int game_loop() {
   clear_screen(state.pixels);
-  static int shotgun_idx = 0, minimap = 0, time = 0, dt = 0, pause = 1,
-             level_edit = 0, stats = 0;
+  /*
+    state_keys[20] =
+      0 : shotgun_idx,
+      1 : minimap,
+      2 : pause,
+      3 : level_edit,
+      4 : stats,
+      5 : wall_init,
+      6 : wall_height,
+      7 : wall_tex,
+  */
+  static int state_keys[20] = {0, 0, 1, 0, 0, 0, 0, 0, 0, 0,
+                               0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  int stats = 0;
+  static int time = 0, dt = 0;
   static int_vec2 wall_s = {MAX_MAP_VAL, MAX_MAP_VAL},
                   wall_e = {MAX_MAP_VAL, MAX_MAP_VAL};
   int print = 0;
@@ -173,41 +188,61 @@ int game_loop() {
       case SDL_QUIT:
         return 1;
       case SDL_MOUSEMOTION:
-        if (level_edit) {
+        if (state_keys[3]) {
           translate_to_editor(e.button.x, e.button.y, &wall_e, &state.editor);
         } else
           rotate(&state.player, e.motion.xrel);
         break;
       case SDL_MOUSEBUTTONDOWN:
-        if (level_edit) {
+        if (state_keys[3]) {
           translate_to_editor(e.button.x, e.button.y, &wall_s, &state.editor);
         }
         break;
       case SDL_MOUSEBUTTONUP:
-        if (level_edit) {
+        if (state_keys[3]) {
           translate_to_editor(e.button.x, e.button.y, &wall_e, &state.editor);
           if (sqrt((wall_s.x - wall_e.x) * (wall_s.x - wall_e.x) +
                    (wall_s.y - wall_e.y) * (wall_s.y - wall_e.y)) > 5)
-            add_wall(&current_map, &wall_s, &wall_e, 0);
-          // reset wall values
-          wall_s.x = MAX_MAP_VAL;
-          wall_s.y = MAX_MAP_VAL;
-          wall_e.x = MAX_MAP_VAL;
-          wall_e.y = MAX_MAP_VAL;
+            state_keys[5] = 1;
         }
         break;
     }
   }
-  handle_keys(&pause, &level_edit, &shotgun_idx, &minimap, &print, &stats, dt);
+  if (state_keys[5] == 1) {
+    text* height_text;
+    int_vec2 height_pos = {SCREEN_WIDTH / 2 - 140, SCREEN_HEIGHT / 2};
+    char* height_str = (char*)malloc(20 * sizeof(char));
+    sprintf(height_str, "ENTER HEIGHT: %d", state_keys[6]);
+    init_text(&height_pos, 20, height_str, 20, YELLOW, 0, 1, &height_text);
+    draw_text(state.pixels, height_text);
+  }
+  if (state_keys[5] == 2) {
+    text* tex_text;
+    int_vec2 tex_pos = {SCREEN_WIDTH / 2 - 150, SCREEN_HEIGHT / 2};
+    char* tex_str = (char*)malloc(20 * sizeof(char));
+    sprintf(tex_str, "ENTER TEXTURE: %d", state_keys[7]);
+    init_text(&tex_pos, 20, "ENTER TEXTURE: ", 20, YELLOW, 0, 1, &tex_text);
+    draw_text(state.pixels, tex_text);
+  }
+  if (state_keys[5] == 3) {
+    add_wall(&current_map, &wall_s, &wall_e, 0, state_keys[6], state_keys[7]);
+    // reset wall values
+    wall_s.x = MAX_MAP_VAL;
+    wall_s.y = MAX_MAP_VAL;
+    wall_e.x = MAX_MAP_VAL;
+    wall_e.y = MAX_MAP_VAL;
+    state_keys[5] = 0;
+  }
+  handle_keys(state_keys, &print, &stats, dt);
 
-  if (!pause) {
+  if (!state_keys[2]) {
     draw_sky(state.pixels, current_map.sky_tex);
     draw_floor(state.pixels, current_map.floor_tex);
     for (int i = 0; i < current_map.num_sections; i++) {
       draw_section(state.pixels, &state.player, &current_map.sections[i]);
     }
 
-    draw_shotgun(state.pixels, shotgun_idx / 10);
+    draw_shotgun(state.pixels, state_keys[0] / 10);
 
     if (!state.screen_text->next) {
       int_vec2 text_pos = {20, SCREEN_HEIGHT - 25};
@@ -216,7 +251,7 @@ int game_loop() {
                 &state.screen_text->next);
     }
     text* stat_txt = state.screen_text->next;
-    if (stats) {
+    if (state_keys[4]) {
       // display the FPS in the top left
       memset(stat_txt->msg, 0, stat_txt->len);
       int fps = 1000 / dt;
@@ -230,8 +265,8 @@ int game_loop() {
     draw_text(state.pixels, stat_txt);
 
     if (dt > 20) {
-      if (shotgun_idx != 0) {
-        shotgun_idx = (shotgun_idx + 3) % 70;
+      if (state_keys[0] != 0) {
+        state_keys[0] = (state_keys[0] + 3) % 70;
       }
       if (state.player.pos.y - P_HEIGHT >= 0) {
         if (state.player.vel.y > -15)
@@ -242,7 +277,7 @@ int game_loop() {
       dt = 0;
     }
   } else {
-    if (level_edit) {
+    if (state_keys[3]) {
       draw_level_edit(state.pixels, &current_map, &state.player, &state.editor);
       if (wall_s.x != MAX_MAP_VAL && wall_s.y != MAX_MAP_VAL &&
           wall_e.x != MAX_MAP_VAL && wall_e.y != MAX_MAP_VAL)
@@ -264,51 +299,80 @@ int cleanup() {
   return 0;
 }
 
-int handle_keys(int* pause, int* level_edit, int* shotgun_idx, int* minimap,
-                int* print, int* stats, int dt) {
-  static int num_esc = 0;
+int handle_keys(int* state_keys, int* print, int* stats, int dt) {
+  static char num[10];
+  static int num_ctr;
   state.keys = SDL_GetKeyboardState(NULL);
-  if (num_esc <= 4) num_esc += state.keys[SDL_SCANCODE_ESCAPE];
-  if (num_esc > 4) {
-    *pause = !*pause;
-    if (!*pause) *level_edit = 0;
-    SDL_SetRelativeMouseMode(!*pause);
-    num_esc = 0;
+  if (state.keys[SDL_SCANCODE_ESCAPE] &&
+      !state.prev_keys[SDL_SCANCODE_ESCAPE]) {
+    state_keys[2] = !state_keys[2];
+    if (!state_keys[2]) state_keys[3] = 0;
+    SDL_SetRelativeMouseMode(!state_keys[2]);
+    memcpy(state.prev_keys, state.keys, sizeof(unsigned char) * state.key_size);
   }
-  if (state.keys[SDL_SCANCODE_SPACE]) {
-    if (!*pause &&
+  if (state_keys[5] != 0 && state_keys[2]) {
+    if (state_keys[5] == 1) state_keys[6] = atoi(num);
+    if (state_keys[5] == 2) state_keys[7] = atoi(num);
+    if (state.keys[SDL_SCANCODE_RETURN] &&
+        !state.prev_keys[SDL_SCANCODE_RETURN]) {
+      num_ctr = 0;
+      for (int i = 0; i < 10; i++) num[i] = '\0';
+      if (state_keys[5] == 1) {
+        state_keys[5] = 2;
+        memcpy(state.prev_keys, state.keys,
+               sizeof(unsigned char) * state.key_size);
+        return 0;
+      }
+      if (state_keys[5] == 2) {
+        state_keys[5] = 3;
+        memcpy(state.prev_keys, state.keys,
+               sizeof(unsigned char) * state.key_size);
+        return 0;
+      }
+    } else {
+      for (int i = 30; i < 39; i++) {
+        if (state.keys[i] && !state.prev_keys[i]) num[num_ctr++ % 10] = i + 19;
+      }
+      if (state.keys[SDL_SCANCODE_0] && !state.prev_keys[SDL_SCANCODE_0])
+        num[num_ctr++ % 10] = '0';
+    }
+    memcpy(state.prev_keys, state.keys, sizeof(unsigned char) * state.key_size);
+    return 0;
+  }
+  if (state.keys[SDL_SCANCODE_SPACE] && !state.prev_keys[SDL_SCANCODE_SPACE]) {
+    if (!state_keys[2] &&
         state.player.pos.y - P_HEIGHT == current_map.sections[0].floor)
       jump(&state.player);
   }
   if (state.keys[SDL_SCANCODE_Q]) {
-    if (*level_edit) pop_wall(&current_map, 0);
+    if (state_keys[3]) pop_wall(&current_map, 0);
   }
   if (state.keys[SDL_SCANCODE_W]) {
-    if (!*pause)
+    if (!state_keys[2])
       move(&state.player, FWD);
     else
       move_editor(&state.editor, FWD);
   }
   if (state.keys[SDL_SCANCODE_S]) {
-    if (!*pause)
+    if (!state_keys[2])
       move(&state.player, BACK);
     else
       move_editor(&state.editor, BACK);
   }
   if (state.keys[SDL_SCANCODE_A]) {
-    if (!*pause)
+    if (!state_keys[2])
       move(&state.player, LEFT);
     else
       move_editor(&state.editor, LEFT);
   }
   if (state.keys[SDL_SCANCODE_D]) {
-    if (!*pause)
+    if (!state_keys[2])
       move(&state.player, RIGHT);
     else
       move_editor(&state.editor, RIGHT);
   }
   if (state.keys[SDL_SCANCODE_T]) {
-    if (!*pause) *stats = 1;
+    if (!state_keys[2]) state_keys[4] = 1;
   }
   if (state.keys[SDL_SCANCODE_P]) {
     printf(
@@ -319,13 +383,13 @@ int handle_keys(int* pause, int* level_edit, int* shotgun_idx, int* minimap,
     *print = 1;
   }
   if (state.keys[SDL_SCANCODE_E]) {
-    if (!*pause) *shotgun_idx = 1;
+    if (!state_keys[2]) state_keys[0] = 1;
   }
   if (state.keys[SDL_SCANCODE_T]) {
-    if (!*pause) *minimap = (*minimap + 1) % 2;
+    if (!state_keys[2]) state_keys[1] = (state_keys[1] + 1) % 2;
   }
   if (state.keys[SDL_SCANCODE_L]) {
-    if (*pause) *level_edit = 1;
+    if (state_keys[2]) state_keys[3] = 1;
   }
   if (state.keys[SDL_SCANCODE_Z]) {
     save_map();
@@ -334,7 +398,8 @@ int handle_keys(int* pause, int* level_edit, int* shotgun_idx, int* minimap,
     load_map("levels/one.lvl");
   }
   if (state.keys[SDL_SCANCODE_N]) {
-    if (*level_edit) new_lvl();
+    if (state_keys[3]) new_lvl();
   }
+  memcpy(state.prev_keys, state.keys, sizeof(unsigned char) * state.key_size);
   return 0;
 }

@@ -45,7 +45,8 @@ int default_map();
 int load_map(char* map_file);
 int save_map();
 void new_lvl();
-void add_wall(map_data* map, int_vec2* start, int_vec2* end, int section);
+void add_wall(map_data* map, int_vec2* start, int_vec2* end, int section,
+              int height, int tex);
 void pop_wall(map_data* map, int section);
 wall* reorder_walls(wall* walls, player* p);
 
