@@ -212,7 +212,7 @@ int game_loop() {
     text* height_text;
     int_vec2 height_pos = {SCREEN_WIDTH / 2 - 140, SCREEN_HEIGHT / 2};
     char* height_str = (char*)malloc(20 * sizeof(char));
-    sprintf(height_str, "ENTER HEIGHT: %d", state_keys[6]);
+    sprintf(height_str, "ENTER HEIGHT %d", state_keys[6]);
     init_text(&height_pos, 20, height_str, 20, YELLOW, 0, 1, &height_text);
     draw_text(state.pixels, height_text);
   }
@@ -220,8 +220,8 @@ int game_loop() {
     text* tex_text;
     int_vec2 tex_pos = {SCREEN_WIDTH / 2 - 150, SCREEN_HEIGHT / 2};
     char* tex_str = (char*)malloc(20 * sizeof(char));
-    sprintf(tex_str, "ENTER TEXTURE: %d", state_keys[7]);
-    init_text(&tex_pos, 20, "ENTER TEXTURE: ", 20, YELLOW, 0, 1, &tex_text);
+    sprintf(tex_str, "ENTER TEXTURE %d", state_keys[7]);
+    init_text(&tex_pos, 20, tex_str, 20, YELLOW, 0, 1, &tex_text);
     draw_text(state.pixels, tex_text);
   }
   if (state_keys[5] == 3) {
