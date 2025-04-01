@@ -84,12 +84,8 @@ void new_lvl() {
   current_map.sections = (map_section*)malloc(sizeof(map_section));
 }
 
-void add_wall(map_data* map, int_vec2* start, int_vec2* end, int section) {
-  int tex = 0, height = 10;
-  printf("ENTER HEIGHT: ");
-  scanf("%d", &height);
-  printf("ENTER TEXTURE: ");
-  scanf("%d", &tex);
+void add_wall(map_data* map, int_vec2* start, int_vec2* end, int section,
+              int height, int tex) {
   if (section > map->num_sections) return;
   map->sections[section].num_walls++;
   wall* w = map->sections[section].walls;
