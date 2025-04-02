@@ -169,6 +169,7 @@ int game_loop() {
       5 : wall_init,
       6 : wall_height,
       7 : wall_tex,
+      8 : current_section
   */
   static int state_keys[20] = {0, 0, 1, 0, 0, 0, 0, 0, 0, 0,
                                0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -225,7 +226,8 @@ int game_loop() {
     draw_text(state.pixels, tex_text);
   }
   if (state_keys[5] == 3) {
-    add_wall(&current_map, &wall_s, &wall_e, 0, state_keys[6], state_keys[7]);
+    add_wall(&current_map, &wall_s, &wall_e, state_keys[8], state_keys[6],
+             state_keys[7]);
     // reset wall values
     wall_s.x = MAX_MAP_VAL;
     wall_s.y = MAX_MAP_VAL;
@@ -344,7 +346,7 @@ int handle_keys(int* state_keys, int* print, int* stats, int dt) {
         state.player.pos.y - P_HEIGHT == current_map.sections[0].floor)
       jump(&state.player);
   }
-  if (state.keys[SDL_SCANCODE_Q]) {
+  if (state.keys[SDL_SCANCODE_Q] && !state.prev_keys[SDL_SCANCODE_Q]) {
     if (state_keys[3]) pop_wall(&current_map, 0);
   }
   if (state.keys[SDL_SCANCODE_W]) {
@@ -374,7 +376,7 @@ int handle_keys(int* state_keys, int* print, int* stats, int dt) {
   if (state.keys[SDL_SCANCODE_T]) {
     if (!state_keys[2]) state_keys[4] = 1;
   }
-  if (state.keys[SDL_SCANCODE_P]) {
+  if (state.keys[SDL_SCANCODE_P] && !state.prev_keys[SDL_SCANCODE_P]) {
     printf(
         "Player Info:\n\tPosition: [%d,%d,%d]\n\tDirection: %u "
         "degrees\n",
@@ -382,8 +384,11 @@ int handle_keys(int* state_keys, int* print, int* stats, int dt) {
         state.player.angle);
     *print = 1;
   }
-  if (state.keys[SDL_SCANCODE_E]) {
-    if (!state_keys[2]) state_keys[0] = 1;
+  if (state.keys[SDL_SCANCODE_E] && !state.prev_keys[SDL_SCANCODE_E]) {
+    if (!state_keys[2])
+      state_keys[0] = 1;
+    else if (state_keys[3])
+      state_keys[8]++;
   }
   if (state.keys[SDL_SCANCODE_T]) {
     if (!state_keys[2]) state_keys[1] = (state_keys[1] + 1) % 2;
