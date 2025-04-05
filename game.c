@@ -169,6 +169,8 @@ int game_loop() {
       5 : wall_init,
       6 : wall_height,
       7 : wall_tex,
+      8 : current_section
+      9 : editor help text
   */
   static int state_keys[20] = {0, 0, 1, 0, 0, 0, 0, 0, 0, 0,
                                0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -225,7 +227,8 @@ int game_loop() {
     draw_text(state.pixels, tex_text);
   }
   if (state_keys[5] == 3) {
-    add_wall(&current_map, &wall_s, &wall_e, 0, state_keys[6], state_keys[7]);
+    add_wall(&current_map, &wall_s, &wall_e, state_keys[8], state_keys[6],
+             state_keys[7]);
     // reset wall values
     wall_s.x = MAX_MAP_VAL;
     wall_s.y = MAX_MAP_VAL;
@@ -282,6 +285,15 @@ int game_loop() {
       if (wall_s.x != MAX_MAP_VAL && wall_s.y != MAX_MAP_VAL &&
           wall_e.x != MAX_MAP_VAL && wall_e.y != MAX_MAP_VAL)
         draw_temp_wall(state.pixels, &wall_s, &wall_e, &state.editor);
+      if (state_keys[9]) {
+        int_vec2 help_pos = {SCREEN_WIDTH - 200, SCREEN_HEIGHT - 50};
+        char help_str[30];
+        sprintf(help_str, "SECTION %d\nNUM WALLS %d", state_keys[8],
+                current_map.sections[state_keys[8]].num_walls);
+        text* help;
+        init_text(&help_pos, 15, help_str, 25, YELLOW, 0, 1, &help);
+        draw_text(state.pixels, help);
+      }
     } else {
       clear_screen(state.pixels);
       pause_screen(state.pixels);
@@ -344,7 +356,7 @@ int handle_keys(int* state_keys, int* print, int* stats, int dt) {
         state.player.pos.y - P_HEIGHT == current_map.sections[0].floor)
       jump(&state.player);
   }
-  if (state.keys[SDL_SCANCODE_Q]) {
+  if (state.keys[SDL_SCANCODE_Q] && !state.prev_keys[SDL_SCANCODE_Q]) {
     if (state_keys[3]) pop_wall(&current_map, 0);
   }
   if (state.keys[SDL_SCANCODE_W]) {
@@ -374,7 +386,7 @@ int handle_keys(int* state_keys, int* print, int* stats, int dt) {
   if (state.keys[SDL_SCANCODE_T]) {
     if (!state_keys[2]) state_keys[4] = 1;
   }
-  if (state.keys[SDL_SCANCODE_P]) {
+  if (state.keys[SDL_SCANCODE_P] && !state.prev_keys[SDL_SCANCODE_P]) {
     printf(
         "Player Info:\n\tPosition: [%d,%d,%d]\n\tDirection: %u "
         "degrees\n",
@@ -382,8 +394,14 @@ int handle_keys(int* state_keys, int* print, int* stats, int dt) {
         state.player.angle);
     *print = 1;
   }
-  if (state.keys[SDL_SCANCODE_E]) {
-    if (!state_keys[2]) state_keys[0] = 1;
+  if (state.keys[SDL_SCANCODE_E] && !state.prev_keys[SDL_SCANCODE_E]) {
+    if (!state_keys[2])
+      state_keys[0] = 1;
+    else if (state_keys[3])
+      state_keys[8]++;
+  }
+  if (state.keys[SDL_SCANCODE_H] && !state.prev_keys[SDL_SCANCODE_H]) {
+    if (state_keys[3]) state_keys[9] = (state_keys[9] + 1) % 2;
   }
   if (state.keys[SDL_SCANCODE_T]) {
     if (!state_keys[2]) state_keys[1] = (state_keys[1] + 1) % 2;
