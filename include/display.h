@@ -10,9 +10,6 @@
 #include "player.h"
 #include "util.h"
 
-#define SCREEN_WIDTH 640
-#define SCREEN_HEIGHT 400
-
 #define TEXTURE_WIDTH 64
 #define TEXTURE_HEIGHT 64
 #define TEXTURE_BORDER 5
