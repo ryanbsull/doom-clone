@@ -28,7 +28,8 @@ typedef struct {
   int num_walls;
   u32 floor_color;
   u32 roof_color;
-  u32 roof_pts[SCREEN_WIDTH];
+  u32 roof_pts[2 * SCREEN_WIDTH];
+  short surface_type;
 } map_section;
 
 typedef struct {

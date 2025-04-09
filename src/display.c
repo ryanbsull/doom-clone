@@ -179,7 +179,7 @@ void fill_wall_textured(u32* pixels, int_vec2* start_t, int_vec2* end_t,
   }
 }
 
-int draw_wall(u32* pixels, player* p, wall* w) {
+int draw_wall(u32* pixels, player* p, wall* w, map_section* s) {
   int dx_w = w->end.x - w->start.x, dy_w = w->end.y - w->start.y;
   int dx_s = w->start.x - p->pos.x, dx_e = w->end.x - p->pos.x,
       dy_t = p->pos.y - w->height, dy_b = p->pos.y - 0,
@@ -228,10 +228,23 @@ int draw_wall(u32* pixels, player* p, wall* w) {
 int draw_section(u32* pixels, player* p, map_section* s) {
   s->walls = reorder_walls(s->walls, p);
   wall* tmp = s->walls;
+  if (p->pos.y > tmp->height)
+    s->surface_type = 1;
+  else if (p->pos.y < tmp->height)
+    s->surface_type = 2;
+  else
+    s->surface_type = 0;
+
+  for (int i = 0; i < SCREEN_WIDTH - 1; i++) {
+    s->roof_pts[2 * i] = 0;
+    s->roof_pts[2 * i + 1] = SCREEN_HEIGHT;
+  }
+
   while (tmp != NULL) {
-    draw_wall(pixels, p, tmp);
+    draw_wall(pixels, p, tmp, s);
     tmp = tmp->next;
   }
+  if (s->surface_type != 0) draw_surface(s->roof_pts, s->roof_color);
   return 0;
 }
 

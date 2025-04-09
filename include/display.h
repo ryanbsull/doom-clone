@@ -55,7 +55,7 @@ int draw_ray(uint32_t* pixels, int x, int hit_point, int start, int end,
              int idx, int side);
 int draw_point(uint32_t* pixels, player* p, int_vec3* pt);
 int draw_section(u32* pixels, player* p, map_section* s);
-int draw_wall(uint32_t* pixels, player* p, wall* w);
+int draw_wall(uint32_t* pixels, player* p, wall* w, map_section* s);
 void draw_sky(u32* pixels, int ceiling_tex);
 void draw_floor(u32* pixels, int floor_tex);
 int clear_screen(uint32_t* pixels);
