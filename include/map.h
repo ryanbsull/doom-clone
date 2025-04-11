@@ -26,10 +26,10 @@ typedef struct _wall {
 typedef struct {
   wall* walls;
   int num_walls;
-  int floor;
   u32 floor_color;
-  int ceiling;
-  u32 ceiling_color;
+  u32 roof_color;
+  u32 roof_pts[2 * SCREEN_WIDTH];
+  short surface_type;
 } map_section;
 
 typedef struct {

@@ -4,6 +4,9 @@
 #include <math.h>
 #include <stdint.h>
 
+#define SCREEN_WIDTH 640
+#define SCREEN_HEIGHT 400
+
 enum dir {
   LEFT = 2,
   RIGHT = -2,

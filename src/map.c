@@ -7,9 +7,7 @@ int default_map() {
   current_map.sections = (map_section*)malloc(sizeof(map_section));
   current_map.sky_tex = 16;
   current_map.floor_tex = 15;
-  current_map.sections[0].ceiling = 10;
-  current_map.sections[0].ceiling_color = 0xFFFFFFFF;
-  current_map.sections[0].floor = 0;
+  current_map.sections[0].roof_color = 0xFFFFFFFF;
   current_map.sections[0].floor_color = 0x00000000;
   current_map.sections[0].num_walls = 0;
   current_map.sections[0].walls = NULL;
@@ -26,9 +24,7 @@ int load_map(char* map_file) {
   if (!fread(&current_map.num_sections, sizeof(int), 1, file)) goto err;
   current_map.sections = (map_section*)malloc(map_size * sizeof(map_section));
   for (int i = 0; i < current_map.num_sections; i++) {
-    fread(&current_map.sections[i].ceiling, sizeof(int), 1, file);
-    fread(&current_map.sections[i].ceiling_color, sizeof(u32), 1, file);
-    fread(&current_map.sections[i].floor, sizeof(int), 1, file);
+    fread(&current_map.sections[i].roof_color, sizeof(u32), 1, file);
     fread(&current_map.sections[i].floor_color, sizeof(u32), 1, file);
     fread(&current_map.sections[i].num_walls, sizeof(int), 1, file);
     current_map.sections[i].walls = (wall*)malloc(sizeof(wall));
