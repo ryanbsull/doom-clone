@@ -225,6 +225,8 @@ int draw_wall(u32* pixels, player* p, wall* w, map_section* s) {
   return 0;
 }
 
+int draw_surface(u32* points, u32 color) { return 0; }
+
 int draw_section(u32* pixels, player* p, map_section* s) {
   s->walls = reorder_walls(s->walls, p);
   wall* tmp = s->walls;
