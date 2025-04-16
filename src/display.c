@@ -225,7 +225,13 @@ int draw_wall(u32* pixels, player* p, wall* w, map_section* s) {
   return 0;
 }
 
-int draw_surface(u32* points, u32 color) { return 0; }
+int draw_surface(u32* pixels, u32* points, u32 color) {
+  for (int x = 0; x < 2 * SCREEN_WIDTH - 1; x += 2) {
+    for (int y = points[x]; y < points[x + 1]; y++)
+      pixels[y * SCREEN_WIDTH + (x / 2)] = color;
+  }
+  return 0;
+}
 
 int draw_section(u32* pixels, player* p, map_section* s) {
   s->walls = reorder_walls(s->walls, p);
@@ -246,7 +252,7 @@ int draw_section(u32* pixels, player* p, map_section* s) {
     draw_wall(pixels, p, tmp, s);
     tmp = tmp->next;
   }
-  if (s->surface_type != 0) draw_surface(s->roof_pts, s->roof_color);
+  if (s->surface_type != 0) draw_surface(pixels, s->roof_pts, s->roof_color);
   return 0;
 }
 
