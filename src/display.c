@@ -238,6 +238,7 @@ int draw_surface(u32* pixels, u32* points, u32 color) {
 int draw_section(u32* pixels, player* p, map_section* s) {
   s->walls = reorder_walls(s->walls, p);
   wall* tmp = s->walls;
+  if (tmp == NULL) return 1;
   if (p->pos.y > tmp->height)
     s->surface_type = 1;
   else if (p->pos.y < tmp->height)

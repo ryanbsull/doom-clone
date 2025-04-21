@@ -352,8 +352,7 @@ int handle_keys(int* state_keys, int* print, int* stats, int dt) {
     return 0;
   }
   if (state.keys[SDL_SCANCODE_SPACE] && !state.prev_keys[SDL_SCANCODE_SPACE]) {
-    if (!state_keys[2] &&
-        state.player.pos.y - P_HEIGHT == current_map.sections[0].floor)
+    if (!state_keys[2] && state.player.pos.y - P_HEIGHT == 0)
       jump(&state.player);
   }
   if (state.keys[SDL_SCANCODE_Q] && !state.prev_keys[SDL_SCANCODE_Q]) {
