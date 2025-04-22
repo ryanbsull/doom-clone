@@ -173,7 +173,7 @@ void fill_wall_textured(u32* pixels, int_vec2* start_t, int_vec2* end_t,
     }
     tex_x = ((int)(i * step_x) % TEXTURE_WIDTH) + tex_x_base;
     for (int j = y_b; j < y_t; j++)
-      if (x >= 0 && x < SCREEN_WIDTH) {
+      if (x >= 0 && x < SCREEN_WIDTH && j >= 0 && j < SCREEN_HEIGHT) {
         tex_y = ((j - y_b) * step_y) + tex_y_base;
         pixels[(j * SCREEN_WIDTH) + x] =
             ((u32*)textures->pixels)[tex_y * TEX_FILE_WIDTH + tex_x];
@@ -230,7 +230,8 @@ int draw_wall(u32* pixels, player* p, wall* w, map_section* s) {
 int draw_surface(u32* pixels, u32* points, u32 color) {
   for (int x = 0; x < 2 * SCREEN_WIDTH - 1; x += 2) {
     for (int y = points[x]; y < points[x + 1]; y++)
-      pixels[y * SCREEN_WIDTH + (x / 2)] = color;
+      if (y >= 0 && y < SCREEN_HEIGHT)
+        pixels[y * SCREEN_WIDTH + (x / 2)] = color;
   }
   return 0;
 }
@@ -267,8 +268,9 @@ int pause_screen(u32* pixels) {
     for (int y = SCREEN_HEIGHT / 4; y < 3 * SCREEN_HEIGHT / 4; y++) {
       tex_x = (x - (SCREEN_WIDTH / 4)) * step_x;
       tex_y = PAUSE_LOGO_H - ((y - (SCREEN_HEIGHT / 4)) * step_y) - 1;
-      pixels[y * SCREEN_WIDTH + x] =
-          ((u32*)pause_logo->pixels)[tex_y * PAUSE_LOGO_W + tex_x];
+      if (x >= 0 && y >= 0 && x < SCREEN_WIDTH && y < SCREEN_HEIGHT)
+        pixels[y * SCREEN_WIDTH + x] =
+            ((u32*)pause_logo->pixels)[tex_y * PAUSE_LOGO_W + tex_x];
     }
   }
 
