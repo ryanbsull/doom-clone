@@ -147,7 +147,7 @@ int clip_diff(int end, int start, int clip) {
 
 void fill_wall_textured(u32* pixels, int_vec2* start_t, int_vec2* end_t,
                         int_vec2* start_b, int_vec2* end_b, int tex_idx,
-                        float wall_len) {
+                        float wall_len, map_section* s) {
   int dx = end_t->x - start_t->x, dy_t = end_t->y - start_t->y,
       dy_b = end_b->y - start_b->y;
   float step_x = (TEXTURE_WIDTH / (float)dx), step_y;
@@ -162,6 +162,8 @@ void fill_wall_textured(u32* pixels, int_vec2* start_t, int_vec2* end_t,
     x = start_b->x + i;
     y_b = start_b->y + (i * slope_b);
     y_t = start_t->y + (i * slope_t);
+    if (s->roof_pts[2 * x] < y_b) s->roof_pts[2 * x] = y_b;
+    if (s->roof_pts[2 * x + 1] > y_t) s->roof_pts[2 * x + 1] = y_t;
     step_y = TEXTURE_HEIGHT / (float)(y_t - y_b);
     if (y_t >= SCREEN_HEIGHT - 1) {
       y_t = SCREEN_HEIGHT;
@@ -171,7 +173,7 @@ void fill_wall_textured(u32* pixels, int_vec2* start_t, int_vec2* end_t,
     }
     tex_x = ((int)(i * step_x) % TEXTURE_WIDTH) + tex_x_base;
     for (int j = y_b; j < y_t; j++)
-      if (x >= 0 && x < SCREEN_WIDTH) {
+      if (x >= 0 && x < SCREEN_WIDTH && j >= 0 && j < SCREEN_HEIGHT) {
         tex_y = ((j - y_b) * step_y) + tex_y_base;
         pixels[(j * SCREEN_WIDTH) + x] =
             ((u32*)textures->pixels)[tex_y * TEX_FILE_WIDTH + tex_x];
@@ -218,9 +220,9 @@ int draw_wall(u32* pixels, player* p, wall* w, map_section* s) {
   w->dist = (rot_ze + rot_zs) / 2;
 
   fill_wall_textured(pixels, &pt_s, &pt_e, &pb_s, &pb_e, w->texture,
-                     sqrt(dx_w * dx_w + dy_w * dy_w));
+                     sqrt(dx_w * dx_w + dy_w * dy_w), s);
   fill_wall_textured(pixels, &pt_e, &pt_s, &pb_e, &pb_s, w->texture,
-                     sqrt(dx_w * dx_w + dy_w * dy_w));
+                     sqrt(dx_w * dx_w + dy_w * dy_w), s);
 
   return 0;
 }
@@ -228,7 +230,8 @@ int draw_wall(u32* pixels, player* p, wall* w, map_section* s) {
 int draw_surface(u32* pixels, u32* points, u32 color) {
   for (int x = 0; x < 2 * SCREEN_WIDTH - 1; x += 2) {
     for (int y = points[x]; y < points[x + 1]; y++)
-      pixels[y * SCREEN_WIDTH + (x / 2)] = color;
+      if (y >= 0 && y < SCREEN_HEIGHT)
+        pixels[y * SCREEN_WIDTH + (x / 2)] = color;
   }
   return 0;
 }
@@ -236,6 +239,7 @@ int draw_surface(u32* pixels, u32* points, u32 color) {
 int draw_section(u32* pixels, player* p, map_section* s) {
   s->walls = reorder_walls(s->walls, p);
   wall* tmp = s->walls;
+  if (tmp == NULL) return 1;
   if (p->pos.y > tmp->height)
     s->surface_type = 1;
   else if (p->pos.y < tmp->height)
@@ -244,8 +248,8 @@ int draw_section(u32* pixels, player* p, map_section* s) {
     s->surface_type = 0;
 
   for (int i = 0; i < SCREEN_WIDTH - 1; i++) {
-    s->roof_pts[2 * i] = 0;
-    s->roof_pts[2 * i + 1] = SCREEN_HEIGHT;
+    s->roof_pts[2 * i] = -1;
+    s->roof_pts[2 * i + 1] = SCREEN_HEIGHT + 1;
   }
 
   while (tmp != NULL) {
@@ -264,8 +268,9 @@ int pause_screen(u32* pixels) {
     for (int y = SCREEN_HEIGHT / 4; y < 3 * SCREEN_HEIGHT / 4; y++) {
       tex_x = (x - (SCREEN_WIDTH / 4)) * step_x;
       tex_y = PAUSE_LOGO_H - ((y - (SCREEN_HEIGHT / 4)) * step_y) - 1;
-      pixels[y * SCREEN_WIDTH + x] =
-          ((u32*)pause_logo->pixels)[tex_y * PAUSE_LOGO_W + tex_x];
+      if (x >= 0 && y >= 0 && x < SCREEN_WIDTH && y < SCREEN_HEIGHT)
+        pixels[y * SCREEN_WIDTH + x] =
+            ((u32*)pause_logo->pixels)[tex_y * PAUSE_LOGO_W + tex_x];
     }
   }
 

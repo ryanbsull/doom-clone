@@ -58,9 +58,7 @@ int save_map() {
   file = fopen(lvl_name, "w+");
   fwrite(&current_map.num_sections, sizeof(int), 1, file);
   for (int i = 0; i < current_map.num_sections; i++) {
-    fwrite(&current_map.sections[i].ceiling, sizeof(int), 1, file);
-    fwrite(&current_map.sections[i].ceiling_color, sizeof(u32), 1, file);
-    fwrite(&current_map.sections[i].floor, sizeof(int), 1, file);
+    fwrite(&current_map.sections[i].roof_color, sizeof(int), 1, file);
     fwrite(&current_map.sections[i].floor_color, sizeof(u32), 1, file);
     fwrite(&current_map.sections[i].num_walls, sizeof(int), 1, file);
     fwrite(current_map.sections[i].walls, sizeof(wall), 1, file);
