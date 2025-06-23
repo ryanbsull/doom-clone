@@ -1,3 +1,5 @@
+#include <cstddef>
+
 #include "../include/display.h"
 
 SDL_Surface* textures;
@@ -382,6 +384,12 @@ void get_letter_offset(int_vec2* offset, char letter) {
     offset->x = (l_idx + 5) * LETTER_W + 12;
     offset->y = -8 * LETTER_H - 20;
   }
+}
+
+void draw_enemy(u32* pixels, player* player, enemy* enemy) {
+  if (!enemy) return;
+  wall w = {{0, 0}, {10, 10}, 10, 10, 10, NULL};
+  draw_wall(pixels, player, &w, current_map.sections);
 }
 
 void draw_text(u32* pixels, text* txt) {

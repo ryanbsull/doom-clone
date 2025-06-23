@@ -65,7 +65,7 @@ void draw_temp_wall(u32* pixels, int_vec2* s, int_vec2* e, int_vec2* editor);
 void init_text(int_vec2* pos, int size, char* str, int len, u32 color,
                int clickable, int display, text** ptr);
 void draw_text(u32* pixels, text* txt);
-void draw_enemy(enemy* p);
+void draw_enemy(u32* pixels, player* player, enemy* enemy);
 int render_screen(SDL_Texture* texture, SDL_Renderer* renderer,
                   uint32_t* pixels);
 int pause_screen(uint32_t* pixels);
