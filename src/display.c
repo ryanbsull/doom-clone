@@ -1,5 +1,3 @@
-#include <cstddef>
-
 #include "../include/display.h"
 
 SDL_Surface* textures;
